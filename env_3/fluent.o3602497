@@ -1,0 +1,1 @@
+/opt/apps/apps/binapps/fluent/19.2/v192/fluent/fluent19.2.0/bin/fluent -r19.2.0 2d -g -t2 -ssh -sge -sgepe smp.pe 2 -i testc.jou -aas -sgelaunch
