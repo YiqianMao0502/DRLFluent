@@ -1,0 +1,21 @@
+[I 10:53:04.554 NotebookApp] JupyterLab extension loaded from /opt/apps/apps/binapps/anaconda3/2019.07/lib/python3.7/site-packages/jupyterlab
+[I 10:53:04.555 NotebookApp] JupyterLab application directory is /opt/apps/apps/binapps/anaconda3/2019.07/share/jupyter/lab
+[I 10:53:04.558 NotebookApp] Serving notebooks from local directory: /net/scratch2/m83358ym/Workingfolder
+[I 10:53:04.558 NotebookApp] The Jupyter Notebook is running at:
+[I 10:53:04.558 NotebookApp] http://10.10.150.60:8888/?token=a4b226dd14f9af6e0834632075dad9bed58486838ad76162
+[I 10:53:04.558 NotebookApp]  or http://127.0.0.1:8888/?token=a4b226dd14f9af6e0834632075dad9bed58486838ad76162
+[I 10:53:04.559 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 10:53:04.587 NotebookApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///mnt/iusers01/mace01/m83358ym/.local/share/jupyter/runtime/nbserver-13714-open.html
+    Or copy and paste one of these URLs:
+        http://10.10.150.60:8888/?token=a4b226dd14f9af6e0834632075dad9bed58486838ad76162
+     or http://127.0.0.1:8888/?token=a4b226dd14f9af6e0834632075dad9bed58486838ad76162
+[I 10:53:35.403 NotebookApp] 302 GET / (10.10.27.2) 0.92ms
+[E 10:53:35.479 NotebookApp] Could not open static file ''
+[W 10:53:35.566 NotebookApp] 404 GET /static/components/react/react-dom.production.min.js (10.10.27.2) 8.78ms referer=http://localhost:8888/tree?
+[I 10:53:40.032 NotebookApp] New terminal with automatic name: 1
+[W 10:53:40.091 NotebookApp] 404 GET /static/components/react/react-dom.production.min.js (10.10.27.2) 2.47ms referer=http://localhost:8888/terminals/1
+TermSocket.open: 1
+TermSocket.open: Opened 1
