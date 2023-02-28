@@ -7,8 +7,10 @@ DRLFluent is a distributed co-simulation framework coupling a DRL API, <a href="
 
 ## Installation
 
+### PC
+
 ```bash
-git clone https://github.com/blavad/marl.git
+git clone https://github.com/a82107335/DRLFluent.git
 cd marl
 pip install -e .
 ```
