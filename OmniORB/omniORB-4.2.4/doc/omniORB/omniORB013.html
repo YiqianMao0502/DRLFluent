@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Interface Type Checking</title>
+</head>
+<body >
+<a href="omniORB012.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB014.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec176" class="chapter">Chapter&#XA0;13&#XA0;&#XA0;Interface Type Checking</h1>
+<p>
+<a id="ch_intf"></a></p><p>This chapter describes the mechanism used by omniORB to ensure type
+safety when object references are exchanged across the network. This
+mechanism is handled completely within the ORB. There is no
+programming interface visible at the application level. However, for
+the sake of diagnosing the problem when there is a type violation, it
+is useful to understand the underlying mechanism in order to interpret
+the error conditions reported by the ORB.</p>
+<h2 id="sec177" class="section">13.1&#XA0;&#XA0;Introduction</h2>
+<p>In GIOP/IIOP, an object reference is encoded as an Interoperable
+Object Reference (IOR) when it is sent across a network connection.
+The IOR contains a Repository ID (RepoId) and one or more
+communication profiles. The communication profiles describe where and
+how the object can be contacted. The RepoId is a string which uniquely
+identifies the IDL interface of the object.</p><p>Unless the <span style="font-family:monospace">ID</span> pragma is specified in the IDL, the ORB generates
+the RepoId string in the so-called OMG IDL Format<sup><a id="text16" href="#note16">1</a></sup>. For instance, the RepoId for the <span style="font-family:monospace">Echo</span>
+interface used in the examples of chapter&#XA0;<a href="omniORB002.html#chap%3Abasic">2</a> is
+<span style="font-family:monospace">IDL:Echo:1.0</span>.</p><p>When interface inheritance is used in the IDL, the ORB always sends the
+RepoId of the most derived interface. For example:</p><div class="lstlisting"><span style="font-size:small">   </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">A</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">     ...</span><span style="font-size:small">
+</span><span style="font-size:small">   };</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">B</span><span style="font-size:small"> : </span><span style="font-size:small">A</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">     ...</span><span style="font-size:small">
+</span><span style="font-size:small">   };</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">C</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">A</span><span style="font-size:small"> </span><span style="font-size:small">arg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">   };</span></div><div class="lstlisting"><span style="font-size:small">   </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">C_ptr</span><span style="font-size:small"> </span><span style="font-size:small">server</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">B_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objB</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">A_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objA</span><span style="font-size:small"> = </span><span style="font-size:small">objB</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">server</span><span style="font-size:small">-&gt;</span><span style="font-size:small">op</span><span style="font-size:small">(</span><span style="font-size:small">objA</span><span style="font-size:small">);  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// Send B as A</span></span></span></div><p>In the example, the operation <span style="font-family:monospace">C::op()</span> accepts an object reference
+of type <span style="font-family:monospace">A</span>. The real type of the reference passed to <span style="font-family:monospace">C::op()</span>
+is <span style="font-family:monospace">B</span>, which inherits from <span style="font-family:monospace">A</span>. In this case, the RepoId of
+<span style="font-family:monospace">B</span>, and not that of <span style="font-family:monospace">A</span>, is sent across the network.</p><p>The GIOP/IIOP specification allows an ORB to send a null string in the
+RepoId field of an IOR. It is up to the receiving end to work out the
+real type of the object. omniORB never sends out null strings as
+RepoIds, but it may receive null RepoIds from other ORBs. In that
+case, it will use the mechanism described below to ensure type safety.</p>
+<h2 id="sec178" class="section">13.2&#XA0;&#XA0;Interface Inheritance</h2>
+<p>When the ORB receives an IOR of interface type B when it expects the
+type to be A, it must find out if B inherits from A. When the ORB has
+no local knowledge of the type B, it must work out the type of B
+dynamically.</p><p>The CORBA specification defines an Interface Repository (IR) from
+which IDL interfaces can be queried dynamically. In the above
+situation, the ORB could contact the IR to find out the type of B.
+However, this approach assumes that an IR is always available and
+contains the up-to-date information of all the interfaces used in the
+domain. This assumption may not be valid in many applications.</p><p>An alternative is to use the <span style="font-family:monospace">_is_a()</span> operation to work out the
+actual type of an object. This approach is simpler and more robust
+than the previous one because no 3rd party is involved, so this is
+what omniORB does.</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">Object</span><span style="font-size:small">{</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">_is_a</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">char</span></span><span style="font-size:small">* </span><span style="font-size:small">type_id</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>The <span style="font-family:monospace">_is_a()</span> operation is part of the <span style="font-family:monospace">CORBA::Object</span>
+interface and must be implemented by every object. The input argument
+is a RepoId. The function returns <span style="font-family:monospace">true</span> if the object is really
+an instance of that type, including if that type is a base type of the
+most derived type of that object.</p><p>In the situation above, the ORB would invoke the <span style="font-family:monospace">_is_a()</span>
+operation on the object and ask if the object is of type A
+<em>before</em> it processes any application invocation on the object.</p><p>Notice that the <span style="font-family:monospace">_is_a()</span> call is <em>not</em> performed when the IOR
+is unmarshalled. It is performed just prior to the first application
+invocation on the object. This leads to some interesting failure modes
+if B reports that it is not an A. Consider the following example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">A</span><span style="font-size:small"> { ... };</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">B</span><span style="font-size:small"> : </span><span style="font-size:small">A</span><span style="font-size:small"> { ... };</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">D</span><span style="font-size:small"> { ... };</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">C</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">A</span><span style="font-size:small">      </span><span style="font-size:small">op1</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">Object</span></span><span style="font-size:small"> </span><span style="font-size:small">op2</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><div class="lstlisting"><span style="font-size:xx-small">   1</span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:xx-small">   2</span><span style="font-size:small"> </span><span style="font-size:small">C_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objC</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:xx-small">   3</span><span style="font-size:small"> </span><span style="font-size:small">A_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objA</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:xx-small">   4</span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objR</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:xx-small">   5</span><span style="font-size:small"> </span><span style="font-size:small">
+</span><span style="font-size:xx-small">   6</span><span style="font-size:small"> </span><span style="font-size:small">objA</span><span style="font-size:small"> =  </span><span style="font-size:small">objC</span><span style="font-size:small">-&gt;</span><span style="font-size:small">op1</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:xx-small">   7</span><span style="font-size:small"> </span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">) </span><span style="font-size:small">objA</span><span style="font-size:small">-&gt;</span><span style="font-size:small">_non_existent</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:xx-small">   8</span><span style="font-size:small"> </span><span style="font-size:small">
+</span><span style="font-size:xx-small">   9</span><span style="font-size:small"> </span><span style="font-size:small">objR</span><span style="font-size:small"> =  </span><span style="font-size:small">objC</span><span style="font-size:small">-&gt;</span><span style="font-size:small">op2</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:xx-small">  10</span><span style="font-size:small"> </span><span style="font-size:small">objA</span><span style="font-size:small"> =  </span><span style="font-size:small">A</span><span style="font-size:small">::</span><span style="font-size:small">_narrow</span><span style="font-size:small">(</span><span style="font-size:small">objR</span><span style="font-size:small">);</span></div><p>If the stubs of A,B,C,D are linked into the executable and:</p><dl class="description"><dt class="dt-description">
+<span style="font-weight:bold">Case 1</span></dt><dd class="dd-description"> <span style="font-family:monospace">C::op1()</span> and <span style="font-family:monospace">C::op2()</span> return a B. Lines 6&#X2013;10
+complete successfully. The remote object is only contacted at line 7.</dd><dt class="dt-description"><span style="font-weight:bold">Case 2</span></dt><dd class="dd-description"> <span style="font-family:monospace">C::op1()</span> and <span style="font-family:monospace">C::op2()</span> return a D. This condition
+only occurs if the runtime of the remote end is buggy. Even though the
+IDL definitions show that D is not derived from A, omniORB gives it
+the benefit of the doubt, in case it actually has a more derived
+interface that is derived from both A and D. At line 7, the object is
+contacted to ask if it is an A. The answer is no, so a
+<span style="font-family:monospace">CORBA::INV_OBJREF</span> exception is raised. At line 10, the narrow
+operation will fail, and objA will be set to nil.
+</dd></dl><p>If only the stubs of A are linked into the executable and:</p><dl class="description"><dt class="dt-description">
+<span style="font-weight:bold">Case 1</span></dt><dd class="dd-description"> <span style="font-family:monospace">C::op1()</span> and <span style="font-family:monospace">C::op2()</span> return a B. Lines 6&#X2013;10
+complete successfully. When lines 7 and 10 are executed, the object is
+contacted to ask if it is an A.</dd><dt class="dt-description"><span style="font-weight:bold">Case 2</span></dt><dd class="dd-description"> <span style="font-family:monospace">C::op1()</span> and <span style="font-family:monospace">C::op2()</span> return a D. This condition
+only occurs if the runtime of the remote end is buggy. Line 6
+completes and no exception is raised. At line 7, the object is
+contacted to ask if it is an A. If the answer is no, a
+<span style="font-family:monospace">CORBA::INV_OBJREF</span> exception is raised. At line 10, the narrow
+operation will fail, and objA will be set to nil.
+</dd></dl>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note16" href="#text16">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">For further
+details of the repository ID formats, see section 10.6 in the CORBA
+2.6 specification.</div></dd></dl>
+<hr>
+<a href="omniORB012.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB014.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

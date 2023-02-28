@@ -1,0 +1,107 @@
+#!/bin/sh
+#
+# Startup script to start/stop the omniORB services
+#
+# chkconfig: 345 90 10
+# description: CORBA Naming Service from omniORB
+# processname: omniNames
+# config: /etc/omniORB.cfg
+#
+# Author: Sander Steffann <sander@steffann.nl>
+# Modified: Thomas Lockhart <lockhart@fourpalms.org>
+# - Put omniNames files under /var/log/omniNames
+# - Adjust start/stop levels
+# Modified: Duncan Grisby <duncan@grisby.org>
+# - Put omniNames files under /var/omniNames, since they are not log files
+
+
+# Standard functions
+. /etc/rc.d/init.d/functions
+
+# Program options
+OMNINAMES=@prefix@/bin/omniNames
+OMNINAMES_DIR=/var/omniNames
+OMNINAMES_LOG_DIR=/var/log/omniNames
+OMNINAMES_DEBUG_LOG=$OMNINAMES_LOG_DIR/omniNames.log
+
+# Make sure libraries are found if we're installed in a non-standard location
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+export LD_LIBRARY_PATH=@libdir@:$LD_LIBRARY_PATH
+
+# Registered port number for CORBA naming service is 2809.
+# Should be preferred but may conflict with other ORBs running concurrently.
+TCPPORT=2809
+OPTIONS="-always -nohostname"
+
+if [ -f /etc/sysconfig/omniNames ];then
+    . /etc/sysconfig/omniNames
+fi
+
+case "$1" in
+  start)
+        # Make sure directories exist
+        [ -d $OMNINAMES_DIR ] || (mkdir -p $OMNINAMES_DIR; chown omni:omni $OMNINAMES_DIR)
+        [ -d $OMNINAMES_LOG_DIR ] || (mkdir -p $OMNINAMES_LOG_DIR; chown omni:omni $OMNINAMES_LOG_DIR)
+
+        if [ -x $OMNINAMES ]; then
+            echo -n "Starting omniNames"
+
+            if [ ! -z "`pidofproc omniNames`" ]; then
+                echo ": already running (pid `pidofproc omniNames`)"
+            else
+                OMNINAMES_OPTIONS="-errlog $OMNINAMES_DEBUG_LOG -logdir $OMNINAMES_DIR -start $TCPPORT $OPTIONS"
+
+                # Run it
+                OMNINAMES_PID=$(su - omni -c "LD_LIBRARY_PATH=$LD_LIBRARY_PATH $OMNINAMES $OMNINAMES_OPTIONS &> /dev/null & echo \$!")
+
+                # Sleep a while, and then check if omniNames is still running
+                sleep 2
+
+                if [ ! -z "`pidofproc omniNames`" ]; then
+                    success "Starting omniNames"
+                    echo $OMNINAMES_PID > /var/run/omniNames.pid
+                else
+                    failure "Starting omniNames"
+                    rm -f /var/run/omniNames.pid
+                fi
+
+                echo
+            fi
+        fi
+
+        if [ ! -z "`pidofproc omniNames`" ]; then
+            touch /var/lock/subsys/omniNames
+        fi
+        ;;
+
+  stop)
+        echo -n "Stopping omniNames"
+        killproc omniNames
+        echo
+
+        while [ -n "`pidofproc omniNames`" ]; do
+            sleep 1
+        done
+
+        rm -f /var/lock/subsys/omniNames
+        rm -f /var/run/omniNames.pid
+        ;;
+
+  restart)
+        $0 stop
+        $0 start
+        ;;
+
+  status)
+        status omniNames
+        exit $?
+        ;;
+
+  *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit 0
+

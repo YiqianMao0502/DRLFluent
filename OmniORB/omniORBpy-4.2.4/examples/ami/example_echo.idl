@@ -1,0 +1,12 @@
+// example_echo.idl
+//
+// This is identical to example_echo.idl in the examples/echo
+// directory. To use the AMI examples, compile it with:
+//
+// omniidl -bpython -Wbami example_echo.idl
+
+module Example {
+  interface Echo {
+    string echoString(in string mesg);
+  };
+};

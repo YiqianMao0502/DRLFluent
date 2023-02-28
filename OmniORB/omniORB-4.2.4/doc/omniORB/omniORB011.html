@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Objects by value, etc.</title>
+</head>
+<body >
+<a href="omniORB010.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB012.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec159" class="chapter">Chapter&#XA0;11&#XA0;&#XA0;Objects by value, abstract interfaces and local interfaces</h1>
+<p>
+<a id="chap:valuetype"></a></p><p>omniORB 4.1 supports objects by value, declared with the
+<span style="font-family:monospace">valuetype</span> keyword in IDL, and both abstract and local
+interfaces. This chapter outlines some issues to do with using these
+types in omniORB. You are assumed to have read the relevant parts of
+the CORBA specification, specifically chapters 3, 4, 5 and 6 of the
+CORBA 2.6 specification, and sections 1.17, 1.18 and 1.35 of the C++
+mapping specification, version 1.1.</p>
+<h2 id="sec160" class="section">11.1&#XA0;&#XA0;Features</h2>
+<p>omniORB supports the complete objects by value specification, with the
+exception of custom valuetypes. All other valuetype features including
+value boxes, value sharing semantics, abstract valuetypes, and
+abstract interfaces are supported. Local interfaces are supported,
+with a number of caveats outlined in
+section&#XA0;<a href="#sec%3ALocalInterfaces">11.8</a>.</p>
+<h2 id="sec161" class="section">11.2&#XA0;&#XA0;Reference counting</h2>
+<p>Values are reference counted. This means that, as long as your
+application properly manages reference counts, values are usually
+automatically deleted when they are no longer required. However, one
+of the features of valuetypes is that they support the representation
+of cyclic graph structures. In that kind of situation, the reference
+counting garbage collection does not work, because references internal
+to the graph prevent the reference counts ever becoming zero.</p><p>To avoid memory leaks, application code must explicitly break any
+reference cycles in values it manipulates. This includes graphs of
+values received as parameters and return values from CORBA operations.</p>
+<h2 id="sec162" class="section">11.3&#XA0;&#XA0;Value sharing and local calls</h2>
+<p>When valuetypes are passed as parameters in CORBA calls (i.e. calls
+on CORBA objects declared with <span style="font-family:monospace">interface</span> in IDL), the structure
+of related values is maintained. Consider, for example, the following
+IDL definitions (which are from the example code in
+<span style="font-family:monospace">src/examples/valuetype/simple</span>:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small">   </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Test</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">b</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>If the client to the <span style="font-family:monospace">Test</span> object passes the same value in both
+parameters, just one value is transmitted, and the object
+implementation receives a copy of the single value, with references to
+it in both parameters.</p><p>In the case that the object is remote from the client, there is
+obviously a copying step involved. In the case that the object is in
+the same address space as the client, the same copying semantics must
+be maintained so that the object implementation can modify the values
+it receives without the client seeing the modifications. To support
+that, omniORB must copy the entire parameter list in one operation, in
+case there is sharing between different parameters. Such copying is a
+rather more time-consuming process than the parameter-by-parameter
+copy that takes place in calls not involving valuetypes.</p><p>To avoid the overhead of copying parameters in this way, applications
+can choose to relax the semantics of value copying in local calls, so
+values are not copied at all, but are passed by reference. In that
+case, the client to a call <em>will</em> see any modifications to the
+values it passes as parameters (and similarly, the object
+implementation will see any changes the client makes to returned
+values). To choose this option, set the <span style="font-family:monospace">copyValuesInLocalCalls</span>
+configuration parameter to zero.</p>
+<h2 id="sec163" class="section">11.4&#XA0;&#XA0;Value box factories</h2>
+<p>With normal valuetypes, omniidl generates factory classes (with names
+ending <span style="font-family:monospace">_init</span>) as required by the C++ mapping specification.
+The application is responsible for registering the factories with the
+ORB.</p><p>Unfortunately, the C++ mapping makes no mention of factories for value
+boxes. In omniORB, factories for value boxes are automatically
+registered with the ORB, and there are no application-visible factory
+classes generated for them. Some other CORBA implementations generate
+application visible factories, and the application <em>does</em> have to
+register the factories with the ORB.</p>
+<h2 id="sec164" class="section">11.5&#XA0;&#XA0;Standard value boxes</h2>
+<p>The standard <span style="font-family:monospace">CORBA::StringValue</span> and <span style="font-family:monospace">CORBA::WStringValue</span>
+value boxes are available to application code. To make the definitions
+available in IDL, #include the standard <span style="font-family:monospace">orb.idl</span>.</p>
+<h2 id="sec165" class="section">11.6&#XA0;&#XA0;Covariant returns</h2>
+<p>As required by the C++ mapping, on C++ compilers that support
+covariant return types, omniidl generates code for the
+<span style="font-family:monospace">_copy_value()</span> function that returns the most derived type of the
+value. On older compilers, <span style="font-family:monospace">_copy_value()</span> returns
+<span style="font-family:monospace">CORBA::ValueBase</span>.</p><p>If you write code that calls <span style="font-family:monospace">_copy_value()</span>, and you need to
+support older compilers, you should assign the result to a variable of
+type <span style="font-family:monospace">CORBA::ValueBase*</span> and downcast to the target type, rather
+than using the covariant return.</p><p>If you are overriding <span style="font-family:monospace">_copy_value()</span>, you must correctly take
+account of the <span style="font-family:monospace">OMNI_HAVE_COVARIANT_RETURNS</span> preprocessor
+definition.</p>
+<h2 id="sec166" class="section">11.7&#XA0;&#XA0;Values inside Anys</h2>
+<p>Valuetypes inserted into Anys cause a number of interesting issues.
+Even when inside Anys, values are required to support complete sharing
+semantics. Take this IDL for example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small">   </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">AnyTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">Any</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Now, suppose the client behaves as follows:</p><div class="lstlisting"><span style="font-size:small">ValueTest</span><span style="font-size:small">::</span><span style="font-size:small">One</span><span style="font-size:small">* </span><span style="font-size:small">v</span><span style="font-size:small"> = </span><span style="font-size:small"><span style="font-weight:bold">new</span></span><span style="font-size:small"> </span><span style="font-size:small">One_impl</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-size:small">"hello"</span></span><span style="font-size:small">, 123);</span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">a</span><span style="font-size:small"> &lt;&lt;= </span><span style="font-size:small">v</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">obj</span><span style="font-size:small">-&gt;</span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small">a</span><span style="font-size:small">);</span></div><p>then on the server side:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">AnyTest_impl</span><span style="font-size:small">::</span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small">ValueTest</span><span style="font-size:small">::</span><span style="font-size:small">One</span><span style="font-size:small">* </span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small">&amp; </span><span style="font-size:small">a</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">{</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">ValueTest</span><span style="font-size:small">::</span><span style="font-size:small">One</span><span style="font-size:small">* </span><span style="font-size:small">v2</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">a</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">v2</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">assert</span><span style="font-size:small">(</span><span style="font-size:small">v2</span><span style="font-size:small"> == </span><span style="font-size:small">v</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div><p>This is all very well in this kind of simple situation, but problems
+can arise if truncatable valuetypes are used. Imagine this derived
+value:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">Two</span><span style="font-size:small"> : </span><span style="font-size:small"><span style="font-weight:bold">truncatable</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small"> </span><span style="font-size:small">d</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Now, suppose that the client shown above sends an instance of
+valuetype <span style="font-family:monospace">Two</span> in both parameters, and suppose that the server
+has not seen the definition of valuetype <span style="font-family:monospace">Two</span>. In this
+situation, as the first parameter is unmarshalled, it will be
+truncated to valuetype <span style="font-family:monospace">One</span>, as required. Now, when the Any is
+unmarshalled, it refers to the same value, which has been truncated.
+So, even though the TypeCode in the Any indicates that the value has
+type <span style="font-family:monospace">Two</span>, the stored value actually has type <span style="font-family:monospace">One</span>. If the
+receiver of the Any tries to pass it on, transmission will fail
+because the Any&#X2019;s value does not match its TypeCode.</p><p>In the opposite situation, where an Any parameter comes before a
+valuetype parameter, a different problem occurs. In that case, as the
+Any is unmarshalled, there is no type information available for
+valuetype <span style="font-family:monospace">Two</span>, so the value inside the Any has an internal
+omniORB type used for unknown valuetypes. As the next parameter is
+unmarshalled, omniORB sees that the shared value is unknown, and is
+able to convert it to the target <span style="font-family:monospace">One</span> valuetype with
+truncation. In this case, the Any and the plain valuetype both have
+the correct types and values, but the fact that both should have
+referred to the same value has been lost.</p><p>Because of these issues, it is best to avoid defining interfaces that
+mix valuetypes and Anys in a single operation, and certainly to avoid
+trying to share plain values with values inside Anys.</p>
+<h3 id="sec167" class="subsection">11.7.1&#XA0;&#XA0;Values inside DynAnys</h3>
+<p>The sharing semantics of valuetypes can also cause difficulties for
+DynAny. The CORBA 2.6 specification does not mention how shared values
+inside DynAnys should be handled; the CORBA 3.x specification slightly
+clarifies the situation, but it is still unclear. To write portable
+code it is best to avoid manipulating DynAnys containing values that
+are shared.</p><p>In omniORB, when a value inside an Any is converted into a DynAny, the
+value&#X2019;s state is copied into the DynAny, and manipulated there. When
+converting back to an Any a new value is created. This means that any
+other references to the original value (whether themselves inside Anys
+of not) still relate to the original value, with unchanged state.
+However, this copying only occurs when a DynValue is actually created,
+so for example a structure with two value members referring to the
+same value can manipulated inside a DynAny without breaking the
+sharing, provided the value members are not accessed as DynAnys.
+Extracting the value members as ValueBase will reveal the sharing, for
+example.</p>
+<h2 id="sec168" class="section">11.8&#XA0;&#XA0;Local Interfaces</h2>
+<p>
+<a id="sec:LocalInterfaces"></a></p><p>Local interfaces are somewhat under-specified in the C++ mapping. This
+section outlines the way local interfaces are supported in omniORB,
+and details the limitations and issues.</p>
+<h3 id="sec169" class="subsection">11.8.1&#XA0;&#XA0;Simple local interfaces</h3>
+<p>With simple IDL, there are no particular issues:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">Test</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">local</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Example</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">hello</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">arg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>The IDL compiler generates an abstract base class
+<span style="font-family:monospace">Test::Example</span>. The application defines a class derived from it
+that implements the abstract <span style="font-family:monospace">hello()</span> member function. Instances of
+that class can then be used where the IDL specifies interface
+<span style="font-family:monospace">Example</span>.</p><p>Note that, by default, local interface implementations have no
+reference counting behaviour. If the local object should be deleted
+when the last reference is released, the application must implement
+the <span style="font-family:monospace">_add_ref()</span> and <span style="font-family:monospace">_remove_ref()</span> virtual member functions
+within the implementation class. Make sure that the implementations
+are thread safe.</p>
+<h3 id="sec170" class="subsection">11.8.2&#XA0;&#XA0;Inheritance from unconstrained interfaces</h3>
+<p>Local interfaces can inherit from unconstrained (i.e. non-local)
+interfaces:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">Test</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">problem</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">inout</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">arg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">local</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Two</span><span style="font-size:small"> : </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Receiver</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">setOne</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>IDL like this leads to two issues to do with omniORB&#X2019;s C++ mapping
+implementation.</p><p>First, an instance of local interface <span style="font-family:monospace">Two</span> should be suitable to
+pass as the argument to the <span style="font-family:monospace">setOne()</span> method of a <span style="font-family:monospace">Receiver</span>
+object (as long as the object is in the same address space as the
+caller). Therefore, the <span style="font-family:monospace">Two</span> abstract base class has to inherit
+from the internal class omniORB uses to map object references of type
+<span style="font-family:monospace">One</span>. For performance reasons, the class that implements
+<span style="font-family:monospace">One</span> object references normally has non-virtual member
+functions. That means that the application-supplied <span style="font-family:monospace">problem()</span>
+member function for the implementation of local interface <span style="font-family:monospace">Two</span>
+will not override the base class&#X2019;s version. To overcome this, the IDL
+for the base unconstrained interface must be compiled with the
+<span style="font-family:monospace">-Wbvirtual-objref</span> switch to omniidl. That makes the member
+functions of the mapping of <span style="font-family:monospace">One</span> into virtual functions, so they
+can be overridden.</p><p>The second problem is that, in some cases, omniORB uses a different
+mapping for object reference member functions than the mapping used in
+servant classes. For example, in the <span style="font-family:monospace">problem()</span> operation, it uses
+an internal type for the inout string argument that avoids memory
+issues if the application uses a <span style="font-family:monospace">String_var</span> in the argument.
+This means that the abstract member function declared in the
+<span style="font-family:monospace">Two</span> class (and implemented by the application) has a different
+signature to the member function in the base class. The
+application-supplied class will therefore not properly override the
+base class method. In all likelihood, the C++ compiler will also
+complain that the two member functions are ambiguous. The solution to
+this problem is to use the implementation mapping in the base object
+reference class, rather than the normal object reference mapping,
+using the <span style="font-family:monospace">-Wbimpl-mapping</span> switch to omniidl. The consequence
+of this is that some uses of <span style="font-family:monospace">_var</span> types for inout arguments
+that are normally acceptable in omniORB can now lead to memory
+management problems.</p><p>In summary, to use local interfaces derived from normal unconstrained
+interfaces, you should compile all your IDL with the omniidl flags:</p><blockquote class="quote">
+<span style="font-family:monospace">-Wbvirtual-objref -Wbimpl-mapping</span>
+</blockquote>
+<h3 id="sec171" class="subsection">11.8.3&#XA0;&#XA0;Valuetypes supporting local interfaces</h3>
+<p>According to the IDL specification, it should be possible to declare a
+valuetype that supports a local interface:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">local</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">my_operation</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">V</span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">supports</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>omniidl accepts the IDL, but unfortunately the resulting C++ code does
+not compile. The C++ mapping specification has a problem in that both
+the <span style="font-family:monospace">CORBA::LocalObject</span> and <span style="font-family:monospace">CORBA::ValueBase</span>
+classes have <span style="font-family:monospace">_add_ref()</span> and <span style="font-family:monospace">_remove_ref()</span> member
+functions defined. The classes generated for the valuetype inherit
+from both these base classes, and therefore have an ambiguity. Until
+the C++ mapping resolves this conflict, valuetypes supporting local
+interfaces cannot be used in omniORB.</p>
+<hr>
+<a href="omniORB010.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB012.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

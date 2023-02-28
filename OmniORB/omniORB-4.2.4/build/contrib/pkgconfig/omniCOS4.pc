@@ -1,0 +1,13 @@
+prefix=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+datadir=${prefix}/share
+idldir=${datadir}/idl/omniORB/COS
+includedir=${prefix}/include
+
+Name: omniCOS4
+Description: CORBA Object Request Broker - CORBA Services stubs
+Version: 4.2.4
+Requires: omniORB4
+Libs: -L${libdir} -lCOS4
+Cflags:

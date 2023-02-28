@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>C++ language mapping</title>
+</head>
+<body >
+<a href="omniORB002.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB004.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec47" class="chapter">Chapter&#XA0;3&#XA0;&#XA0;C++ language mapping</h1>
+<p>Now that you are familiar with the basics, it is important to
+familiarise yourself with the standard IDL to C++ language mapping.
+The mapping is described in detail in&#XA0;[<a href="omniORB016.html#cxxmapping">OMG03</a>]. If you have
+not done so, you should obtain a copy of the document and use that as
+the programming guide to omniORB.</p><p>The specification is not an easy read. The alternative is to use one
+of the books on CORBA programming. For instance, Henning and Vinoski&#X2019;s
+&#X2018;Advanced CORBA Programming with C++&#X2019;&#XA0;[<a href="omniORB016.html#henning1999">HV99</a>] includes many
+example code fragments to illustrate how to use the C++ mapping.</p>
+<h2 id="sec48" class="section">3.1&#XA0;&#XA0;omniORB 2 BOA compatibility</h2>
+<p>
+<a id="sec:BOAcompat"></a></p><p>Before the Portable Object Adapter (POA) specification, many of the
+details of how servant objects should be implemented and registered
+with the system were unspecified, so server-side code was not portable
+between ORBs. The POA specification rectifies that. For compatibility,
+omniORB 4 still supports the old omniORB 2.x BOA mapping, but you
+should always use the POA mapping for new code. BOA code and POA code
+can coexist within a single program. </p><p>If you use the <span style="font-family:monospace">-WbBOA</span> option to omniidl, it will generate
+skeleton code with (nearly) the same interface as the old omniORB 2
+BOA mapping, as well as code to be used with the POA. Note that since
+the major problem with the BOA specification was that server code was
+not portable between ORBs, it is unlikely that omniORB&#X2019;s BOA
+compatibility will help you much if you are moving from a different
+BOA-based ORB.</p><p>The BOA compatibility permits the majority of BOA code to compile
+without difficulty. However, there are a number of constructs which
+relied on omniORB 2 implementation details which no longer work.</p><ul class="itemize"><li class="li-itemize">omniORB 2 did not use distinct types for object references and
+servants, and often accepted a pointer to a servant when the CORBA
+specification says it should only accept an object reference. Such
+code will not compile under omniORB 4.</li><li class="li-itemize">The reverse is true for <span style="font-family:monospace">BOA::obj_is_ready()</span>. It now only
+works when passed a pointer to a servant object, not an object
+reference. The more commonly used mechanism of calling
+<span style="font-family:monospace">_obj_is_ready(boa)</span> on the servant object still works as
+expected.</li><li class="li-itemize">It used to be the case that the skeleton class for interface
+<span style="font-family:monospace">I</span> (<span style="font-family:monospace">_sk_I</span>) was derived from class <span style="font-family:monospace">I</span>. This meant
+that the names of any types declared in the interface were available
+in the scope of the skeleton class. This is no longer true. If you
+have an interface:<div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">S</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">,</span><span style="font-size:small">b</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">op</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>then where before the implementation code might have been:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">I_impl</span><span style="font-size:small"> : </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small">_sk_I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">op</span><span style="font-size:small">();  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// _sk_I is derived from I</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">I</span><span style="font-size:small">::</span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">I_impl</span><span style="font-size:small">::</span><span style="font-size:small">op</span><span style="font-size:small">() {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">ret</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// ...</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div><p>it is now necessary to fully qualify all uses of <span style="font-family:monospace">S</span>:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">I_impl</span><span style="font-size:small"> : </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small">_sk_I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">I</span><span style="font-size:small">::</span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">op</span><span style="font-size:small">(); </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// _sk_I is not derived from I</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">I</span><span style="font-size:small">::</span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">I_impl</span><span style="font-size:small">::</span><span style="font-size:small">op</span><span style="font-size:small">() {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">I</span><span style="font-size:small">::</span><span style="font-size:small">S</span><span style="font-size:small"> </span><span style="font-size:small">ret</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// ...</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div></li><li class="li-itemize">The proprietary omniORB 2 LifeCycle extensions are no longer
+supported. All of the facilities it offered can be implemented with
+the POA interfaces, and the <span style="font-family:monospace">omniORB::LOCATION_FORWARD</span>
+exception (see section&#XA0;<a href="omniORB004.html#sec%3AlocationForward">4.8</a>). Code which used the
+old interfaces will have to be rewritten.</li></ul>
+<h2 id="sec49" class="section">3.2&#XA0;&#XA0;omniORB 3.0 compatibility</h2>
+<p>omniORB 4 is almost completely source-code compatible with omniORB
+3.0. There are two main cases where code may have to change. The first
+is code that uses the omniORB API, some aspects of which have
+changed. The omniORB configuration file also has a new format. See the
+next chapter for details of the new API and configuration file.</p><p>The second case of code that may have to change is code using the
+Dynamic Any interfaces. The standard changed quite significantly
+between CORBA 2.2 and CORBA 2.3; omniORB 3.0 supported the old CORBA
+2.2 interfaces; omniORB 4 uses the new mapping. The changes are
+largely syntax changes, rather than semantic differences.</p>
+<h2 id="sec50" class="section">3.3&#XA0;&#XA0;omniORB 4.0 compatibility</h2>
+<p>omniORB 4.2 is source-code compatible with omniORB 4.0, with four
+exceptions:</p><ol class="enumerate" type=1><li class="li-enumerate">As required by the 1.1 version of the CORBA C++ mapping
+specification, the <span style="font-family:monospace">RefCountServantBase</span> class has been
+deprecated, and the reference counting functionality moved into
+<span style="font-family:monospace">ServantBase</span>. For backwards compatibility,
+<span style="font-family:monospace">RefCountServantBase</span> still exists, but is now defined as an
+empty struct. Most code will continue to work unchanged, but code
+that explicitly calls <span style="font-family:monospace">RefCountServantBase::_add_ref()</span> or
+<span style="font-family:monospace">_remove_ref()</span> will no longer compile.</li><li class="li-enumerate">omniORB 4.0 had an option for Any extraction semantics that was
+compatible with omniORB 2.7, where ownership of extracted values was
+not maintained by the Any. That option is no longer available.</li><li class="li-enumerate">The members of the <span style="font-family:monospace">clientSendRequest</span> interceptor have
+been changed, replacing all the separate variables with a single
+member of type <span style="font-family:monospace">GIOP_C</span>. All the values previously available
+can be accessed through the <span style="font-family:monospace">GIOP_C</span> instance.</li><li class="li-enumerate">The C++ mapping contains Any insertion operators for sequence
+types that are passed by pointer, which cause the Any to take
+ownership of the inserted sequence. In omniORB 4.0 and earlier, the
+sequence was immediately marshalled into the Any&#X2019;s internal buffer,
+and the sequence was deleted. In omniORB 4.1, the sequence pointer
+is stored by the Any, and the sequence is deleted later when the Any
+is destroyed.<p>For most uses, this change is not visible to application code.
+However, if a sequence is constructed using an application-supplied
+buffer with the release flag set to <span style="font-family:monospace">false</span> (meaning that the
+application continues to own the buffer), it is now important that
+the buffer is not deleted or modified while the Any exists, since
+the Any continues to refer to the buffer contents. This change
+means that code that worked with omniORB 4.0 may now fail with 4.1,
+with the Any seeing modified data or the process crashing due to
+accessing deleted data. To avoid this situation, use the alternative
+Any insertion operator using a const reference, which copies the
+sequence.</p></li></ol>
+<h2 id="sec51" class="section">3.4&#XA0;&#XA0;omniORB 4.1 compatibility</h2>
+<p>omniORB 4.2 is source-code compatible with omniORB 4.1 with one
+exception:</p><ol class="enumerate" type=1><li class="li-enumerate">When omniORB 4.1 and earlier detected a timeout condition, they
+would throw the <span style="font-family:monospace">CORBA::TRANSIENT</span> system exception. omniORB
+4.2 supports the <span style="font-family:monospace">CORBA::TIMEOUT</span> system exception that was
+introduced with the CORBA Messaging specification. Application code
+that caught <span style="font-family:monospace">CORBA::TRANSIENT</span> to handle timeout situations
+should be updated to catch <span style="font-family:monospace">CORBA::TIMEOUT</span>
+instead. Alternatively, to avoid code changes, omniORB can be
+configured to throw <span style="font-family:monospace">CORBA::TRANSIENT</span> for timeouts, by setting
+the <span style="font-family:monospace">throwTransientOnTimeout</span> parameter to <span style="font-family:monospace">1</span>. See
+section&#XA0;<a href="omniORB004.html#sec%3Aclientconf">4.4</a>.</li></ol>
+<hr>
+<a href="omniORB002.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB004.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

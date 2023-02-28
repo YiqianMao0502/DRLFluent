@@ -1,0 +1,11 @@
+prefix=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: omniCOSDynamic4
+Description: CORBA Object Request Broker - CORBA Services dynamic stubs
+Version: 4.2.4
+Requires: omniCOS4
+Libs: -L${libdir} -lCOSDynamic4
+Cflags:

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORBpy.css">
+<title>Interoperable Naming Service</title>
+</head>
+<body >
+<a href="omniORBpy006.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy008.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec101" class="chapter">Chapter&#XA0;7&#XA0;&#XA0;Interoperable Naming Service</h1>
+<p>
+<a id="chap:ins"></a></p><p>omniORB supports the Interoperable Naming Service (INS). The following
+is a summary of its facilities.</p>
+<h2 id="sec102" class="section">7.1&#XA0;&#XA0;Object URIs</h2>
+<p>As well as accepting IOR-format strings, <span style="font-family:monospace">orb.string_to_object()</span>
+now also supports two new Uniform Resource Identifier
+(URI)&#XA0;[<a href="omniORBpy013.html#rfc2396">BLFIM98</a>] formats, which can be used to specify objects in
+a convenient human-readable form. The existing IOR-format strings are
+now also considered URIs.</p>
+<h3 id="sec103" class="subsection">7.1.1&#XA0;&#XA0;corbaloc</h3>
+<p><span style="font-family:monospace">corbaloc</span> URIs allow you to specify object references which
+can be contacted by IIOP, or found through
+<span style="font-family:monospace">ORB::resolve_initial_references()</span>. To specify an IIOP object
+reference, you use a URI of the form:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc:iiop:</span>&lt;<span style="font-style:italic">host</span>&gt;<span style="font-family:monospace">:</span>&lt;<span style="font-style:italic">port</span>&gt;<span style="font-family:monospace">/</span>&lt;<span style="font-style:italic">object key</span>&gt;
+</blockquote><p>for example:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc:iiop:myhost.example.com:1234/MyObjectKey</span>
+</blockquote><p>which specifies an object with key &#X2018;MyObjectKey&#X2019; within a
+process running on myhost.example.com listening on port 1234. Object
+keys containing non-ASCII characters can use the standard URI %
+escapes:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc:iiop:myhost.example.com:1234/My</span><span style="font-family:monospace">%</span><span style="font-family:monospace">efObjectKey</span>
+</blockquote><p>denotes an object key with the value 239 (hex ef) in the
+third octet.</p><p>The protocol name &#X2018;<span style="font-family:monospace">iiop</span>&#X2019; can be abbreviated to the empty
+string, so the original URI can be written:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc::myhost.example.com:1234/MyObjectKey</span>
+</blockquote><p>The IANA has assigned port number 2809<sup><a id="text13" href="#note13">1</a></sup> for use by <span style="font-family:monospace">corbaloc</span>, so if
+the server is listening on that port, you can leave the port number
+out. The following two URIs refer to the same object:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc::myhost.example.com:2809/MyObjectKey</span><br>
+<span style="font-family:monospace">corbaloc::myhost.example.com/MyObjectKey</span>
+</blockquote><p>You can specify an object which is available at more than
+one location by separating the locations with commas:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc::myhost.example.com,:localhost:1234/MyObjectKey</span>
+</blockquote><p>Note that you must restate the protocol for each address,
+hence the &#X2018;<span style="font-family:monospace">:</span>&#X2019; before &#X2018;<span style="font-family:monospace">localhost</span>&#X2019;. It could
+equally have been written &#X2018;<span style="font-family:monospace">iiop:localhost</span>&#X2019;.</p><p>You can also specify an IIOP version number:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc::1.2@myhost.example.com/MyObjectKey</span>
+</blockquote><p>Specifying IIOP versions above 1.0 is slightly risky since higher
+versions make use of various information stored in IORs that is not
+present in a corbaloc URI. It is generally best to contact initial
+corbaloc objects with IIOP 1.0, and rely on higher versions for all
+other object references.</p><p>Alternatively, to use <span style="font-family:monospace">resolve_initial_references()</span>, you
+use a URI of the form:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaloc:rir:/NameService</span>
+</blockquote>
+<h3 id="sec104" class="subsection">7.1.2&#XA0;&#XA0;corbaname</h3>
+<p>
+<a id="sec:corbaname"></a></p><p><span style="font-family:monospace">corbaname</span> URIs cause <span style="font-family:monospace">string_to_object()</span> to look-up a
+name in a CORBA Naming service. They are an extension of the
+<span style="font-family:monospace">corbaloc</span> syntax:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaname:</span>&lt;<span style="font-style:italic">corbaloc location</span>&gt;<span style="font-family:monospace">/</span>&lt;<span style="font-style:italic">object key</span>&gt;<span style="font-family:monospace">#</span>&lt;<span style="font-style:italic">stringified name</span>&gt;
+</blockquote><p>for example:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaname::myhost/NameService#project/example/echo.obj</span><br>
+<span style="font-family:monospace">corbaname:rir:/NameService#project/example/echo.obj</span>
+</blockquote><p>The object found with the <span style="font-family:monospace">corbaloc</span>-style portion
+must be of type <span style="font-family:monospace">CosNaming::NamingContext</span>, or something
+derived from it. If the object key (or <span style="font-family:monospace">rir</span> name) is
+&#X2018;<span style="font-family:monospace">NameService</span>&#X2019;, it can be left out:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaname::myhost#project/example/echo.obj</span><br>
+<span style="font-family:monospace">corbaname:rir:#project/example/echo.obj</span>
+</blockquote><p>The stringified name portion can also be left out, in which
+case the URI denotes the <span style="font-family:monospace">CosNaming::NamingContext</span> which would
+have been used for a look-up:</p><blockquote class="quote">
+<span style="font-family:monospace">corbaname::myhost.example.com</span><br>
+<span style="font-family:monospace">corbaname:rir:</span>
+</blockquote><p>The first of these examples is the easiest way of specifying
+the location of a naming service.</p>
+<h2 id="sec105" class="section">7.2&#XA0;&#XA0;Configuring resolve_initial_references</h2>
+<p>
+<a id="sec:insargs"></a></p><p>The INS specifies two standard command line arguments which provide a
+portable way of configuring <span style="font-family:monospace">ORB::resolve_initial_references()</span>:</p>
+<h3 id="sec106" class="subsection">7.2.1&#XA0;&#XA0;ORBInitRef</h3>
+<p><span style="font-family:monospace">-ORBInitRef</span> takes an argument of the form
+&lt;<span style="font-style:italic">ObjectId</span>&gt;<span style="font-family:monospace">=</span>&lt;<span style="font-style:italic">ObjectURI</span>&gt;. So, for example,
+with command line arguments of:</p><blockquote class="quote">
+<span style="font-family:monospace">-ORBInitRef NameService=corbaname::myhost.example.com</span>
+</blockquote><p><span style="font-family:monospace">resolve_initial_references("NameService")</span> will
+return a reference to the object with key &#X2018;NameService&#X2019; available on
+myhost.example.com, port 2809. Since IOR-format strings are considered
+URIs, you can also say things like:</p><blockquote class="quote">
+<span style="font-family:monospace">-ORBInitRef NameService=IOR:00ff...</span>
+</blockquote>
+<h3 id="sec107" class="subsection">7.2.2&#XA0;&#XA0;ORBDefaultInitRef</h3>
+<p><span style="font-family:monospace">-ORBDefaultInitRef</span> provides a prefix string which is used to
+resolve otherwise unknown names. When
+<span style="font-family:monospace">resolve_initial_references()</span> is unable to resolve a name which
+has been specifically configured (with <span style="font-family:monospace">-ORBInitRef</span>), it
+constructs a string consisting of the default prefix, a &#X2018;<span style="font-family:monospace">/</span>&#X2019;
+character, and the name requested. The string is then fed to
+<span style="font-family:monospace">string_to_object()</span>. So, for example, with a command line of:</p><blockquote class="quote">
+<span style="font-family:monospace">-ORBDefaultInitRef corbaloc::myhost.example.com</span>
+</blockquote><p>a call to <span style="font-family:monospace">resolve_initial_references("MyService")</span>
+will return the object reference denoted by
+&#X2018;<span style="font-family:monospace">corbaloc::myhost.example.com/MyService</span>&#X2019;.</p><p>Similarly, a <span style="font-family:monospace">corbaname</span> prefix can be used to cause
+look-ups in the naming service. Note, however, that since a
+&#X2018;<span style="font-family:monospace">/</span>&#X2019; character is always added to the prefix, it is
+impossible to specify a look-up in the root context of the naming
+service&#X2014;you have to use a sub-context, like:</p><blockquote class="quote">
+<span style="font-family:monospace">-ORBDefaultInitRef corbaname::myhost.example.com#services</span>
+</blockquote>
+<h2 id="sec108" class="section">7.3&#XA0;&#XA0;omniNames</h2>
+<h3 id="sec109" class="subsection">7.3.1&#XA0;&#XA0;NamingContextExt</h3>
+<p>omniNames supports the <span style="font-family:monospace">CosNaming::NamingContextExt</span> interface:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">CosNaming</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">NamingContextExt</span><span style="font-size:small"> : </span><span style="font-size:small">NamingContext</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">StringName</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">Address</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">URLString</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">StringName</span><span style="font-size:small">  </span><span style="font-size:small">to_string</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">Name</span><span style="font-size:small"> </span><span style="font-size:small">n</span><span style="font-size:small">)        </span><span style="font-size:small"><span style="font-weight:bold">raises</span></span><span style="font-size:small">(</span><span style="font-size:small">InvalidName</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">Name</span><span style="font-size:small">        </span><span style="font-size:small">to_name</span><span style="font-size:small">  (</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">StringName</span><span style="font-size:small"> </span><span style="font-size:small">sn</span><span style="font-size:small">) </span><span style="font-size:small"><span style="font-weight:bold">raises</span></span><span style="font-size:small">(</span><span style="font-size:small">InvalidName</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">exception</span></span><span style="font-size:small"> </span><span style="font-size:small">InvalidAddress</span><span style="font-size:small"> {};</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">URLString</span><span style="font-size:small">   </span><span style="font-size:small">to_url</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">Address</span><span style="font-size:small"> </span><span style="font-size:small">addr</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">StringName</span><span style="font-size:small"> </span><span style="font-size:small">sn</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small"><span style="font-weight:bold">raises</span></span><span style="font-size:small">(</span><span style="font-size:small">InvalidAddress</span><span style="font-size:small">, </span><span style="font-size:small">InvalidName</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">Object</span></span><span style="font-size:small">      </span><span style="font-size:small">resolve_str</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">StringName</span><span style="font-size:small"> </span><span style="font-size:small">n</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small"><span style="font-weight:bold">raises</span></span><span style="font-size:small">(</span><span style="font-size:small">NotFound</span><span style="font-size:small">, </span><span style="font-size:small">CannotProceed</span><span style="font-size:small">, </span><span style="font-size:small">InvalidName</span><span style="font-size:small">, </span><span style="font-size:small">AlreadyBound</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p><span style="font-family:monospace">to_string()</span> and <span style="font-family:monospace">to_name()</span> convert from <span style="font-family:monospace">CosNaming::Name</span>
+sequences to flattened strings and vice-versa. Calling these
+operations involves remote calls to the naming service, so they are
+not particularly efficient. The <span style="font-family:monospace">omniORB.URI</span> module contains
+equivalent <span style="font-family:monospace">nameToString()</span> and <span style="font-family:monospace">stringToName()</span> functions, which do
+not involve remote calls.</p><p>A <span style="font-family:monospace">CosNaming::Name</span> is stringified by separating name components
+with &#X2018;<span style="font-family:monospace">/</span>&#X2019; characters. The <span style="font-family:monospace">kind</span> and <span style="font-family:monospace">id</span> fields of
+each component are separated by &#X2018;<span style="font-family:monospace">.</span>&#X2019; characters. If the
+<span style="font-family:monospace">kind</span> field is empty, the representation has no trailing
+&#X2018;<span style="font-family:monospace">.</span>&#X2019;; if the <span style="font-family:monospace">id</span> is empty, the representation starts
+with a &#X2018;<span style="font-family:monospace">.</span>&#X2019; character; if both <span style="font-family:monospace">id</span> and <span style="font-family:monospace">kind</span>
+are empty, the representation is just a &#X2018;<span style="font-family:monospace">.</span>&#X2019;. The backslash
+&#X2018;<span style="font-family:monospace">\</span>&#X2019; is used to escape the meaning of
+&#X2018;<span style="font-family:monospace">/</span>&#X2019;, &#X2018;<span style="font-family:monospace">.</span>&#X2019; and &#X2018;<span style="font-family:monospace">\</span>&#X2019; itself.</p><p><span style="font-family:monospace">to_url()</span> takes a <span style="font-family:monospace">corbaloc</span> style address and key string
+(but without the <span style="font-family:monospace">corbaloc:</span> part), and a stringified name,
+and returns a <span style="font-family:monospace">corbaname</span> URI (incorrectly called a URL)
+string, having properly escaped any invalid characters. The
+specification does not make it clear whether or not the address string
+should also be escaped by the operation; omniORB does not escape
+it. For this reason, it is best to avoid calling <span style="font-family:monospace">to_url()</span> if the
+address part contains escapable characters. The local function
+<span style="font-family:monospace">omniORB.URI.addrAndNameToURI()</span> is equivalent.</p><p><span style="font-family:monospace">resolve_str()</span> is equivalent to calling <span style="font-family:monospace">to_name()</span> followed by
+the inherited <span style="font-family:monospace">resolve()</span> operation. There are no string-based
+equivalents of the various bind operations.</p>
+<h3 id="sec110" class="subsection">7.3.2&#XA0;&#XA0;Use with corbaname</h3>
+<p>To make it easy to use omniNames with <span style="font-family:monospace">corbaname</span> URIs, it
+starts with the default port of 2809, and an object key of
+&#X2018;<span style="font-family:monospace">NameService</span>&#X2019; for the root naming context.</p>
+<h2 id="sec111" class="section">7.4&#XA0;&#XA0;omniMapper</h2>
+<p>omniMapper is a simple daemon which listens on port 2809 (or any other
+port), and redirects IIOP requests for configured object keys to
+associated persistent IORs. It can be used to make a naming service
+(even an old non-INS aware version of omniNames or other ORB&#X2019;s naming
+service) appear on port 2809 with the object key
+&#X2018;<span style="font-family:monospace">NameService</span>&#X2019;. The same goes for any other service you may
+wish to specify, such as an interface repository. omniMapper is
+started with a command line of:</p><blockquote class="quote">
+<span style="font-family:monospace">omniMapper [-port </span>&lt;<span style="font-style:italic">port</span>&gt;<span style="font-family:monospace">] [-config </span>&lt;<span style="font-style:italic">config file</span>&gt;<span style="font-family:monospace">] [-v]</span>
+</blockquote><p>The <span style="font-family:monospace">-port</span> option allows you to choose a port other
+than 2809 to listen on. The <span style="font-family:monospace">-config</span> option specifies a
+location for the configuration file. The default name is
+<span style="font-family:monospace">/etc/omniMapper.cfg</span>, or <span style="font-family:monospace">C:\omniMapper.cfg</span> on
+Windows. omniMapper does not normally print anything; the <span style="font-family:monospace">-v</span>
+option makes it verbose so it prints configuration information and a
+record of the redirections it makes, to standard output.</p><p>The configuration file is very simple. Each line contains a string to
+be used as an object key, some white space, and an IOR (or any valid
+URI) that it will redirect that object key to. Comments should be
+prefixed with a &#X2018;<span style="font-family:monospace">#</span>&#X2019; character. For example:</p><blockquote class="quote">
+<pre class="verbatim"># Example omniMapper.cfg
+NameService         IOR:000f...
+InterfaceRepository IOR:0100...
+</pre>
+</blockquote><p>omniMapper can either be run on a single machine, in much the same way
+as omniNames, or it can be run on <em>every</em> machine, with a common
+configuration file. That way, each machine&#X2019;s omniORB configuration
+file could contain the line:</p><blockquote class="quote">
+<pre class="verbatim">ORBDefaultInitRef corbaloc::localhost
+</pre>
+</blockquote>
+<h2 id="sec112" class="section">7.5&#XA0;&#XA0;Creating objects with simple object keys</h2>
+<p>In normal use, omniORB creates object keys containing various
+information including POA names and various non-ASCII characters.
+Since object keys are supposed to be opaque, this is not usually a
+problem. The INS breaks this opacity and requires servers to create
+objects with human-friendly keys.</p><p>If you wish to make your objects available with human-friendly URIs,
+there are two options. The first is to use omniMapper as described
+above, in conjunction with a <span style="font-family:monospace">PERSISTENT</span> POA. The second is to
+create objects with the required keys yourself. You do this with a
+special POA with the name &#X2018;<span style="font-family:monospace">omniINSPOA</span>&#X2019;, acquired from
+<span style="font-family:monospace">resolve_initial_references()</span>. This POA has the <span style="font-family:monospace">USER_ID</span>
+and <span style="font-family:monospace">PERSISTENT</span> policies, and the special property that the
+object keys it creates contain only the object ids given to the POA,
+and no other data. It is a normal POA in all other respects, so you
+can activate/deactivate it, create children, and so on, in the usual
+way.</p><p>Children of the omniINSPOA do not inherit its special properties of
+creating simple object keys. If the omniINSPOA&#X2019;s policies are not
+suitable for your application, you cannot create a POA with different
+policies (such as single threading, for example), and still generate
+simple object keys. Instead, you can activate a servant in the
+omniINSPOA that uses location forwarding to redirect requests to
+objects in a different POA.</p>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note13" href="#text13">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">Not 2089 as
+printed in [<a href="omniORBpy013.html#inschapters">OMG00</a>]!</div></dd></dl>
+<hr>
+<a href="omniORBpy006.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy008.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

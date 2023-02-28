@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Interceptors</title>
+</head>
+<body >
+<a href="omniORB008.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB010.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec139" class="chapter">Chapter&#XA0;9&#XA0;&#XA0;Interceptors</h1>
+<p>
+<a id="chap:interceptors"></a></p><p>omniORB supports interceptors that allow the application to insert
+processing in various points along the call chain, and in various
+other locations. It does not (yet) support the standard Portable
+Interceptors API.</p><p>The interceptor interfaces are defined in a single header,
+<span style="font-family:monospace">include/omniORB4/omniInterceptors.h</span>. Each interception point
+consists of a singleton object with <span style="font-family:monospace">add()</span> and <span style="font-family:monospace">remove()</span> methods,
+and the definition of an &#X2018;interceptor info&#X2019; class. For example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">omniInterceptors</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  ...</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">clientSendRequest_T</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">info_T</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">GIOP_C</span><span style="font-size:small">&amp;                 </span><span style="font-size:small">giop_c</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">IOP</span><span style="font-size:small">::</span><span style="font-size:small">ServiceContextList</span><span style="font-size:small"> </span><span style="font-size:small">service_contexts</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">info_T</span><span style="font-size:small">(</span><span style="font-size:small">GIOP_C</span><span style="font-size:small">&amp; </span><span style="font-size:small">c</span><span style="font-size:small">) : </span><span style="font-size:small">giop_c</span><span style="font-size:small">(</span><span style="font-size:small">c</span><span style="font-size:small">), </span><span style="font-size:small">service_contexts</span><span style="font-size:small">(5) {}</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">private</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">info_T</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">info_T</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">info_T</span><span style="font-size:small">&amp;);</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small">info_T</span><span style="font-size:small">&amp; </span><span style="font-size:small"><span style="font-weight:bold">operator</span></span><span style="font-size:small">=(</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">info_T</span><span style="font-size:small">&amp;);</span><span style="font-size:small">
+</span><span style="font-size:small">    };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> (*</span><span style="font-size:small">interceptFunc</span><span style="font-size:small">)(</span><span style="font-size:small">info_T</span><span style="font-size:small">&amp; </span><span style="font-size:small">info</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">add</span><span style="font-size:small">(</span><span style="font-size:small">interceptFunc</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">remove</span><span style="font-size:small">(</span><span style="font-size:small">interceptFunc</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">  ...</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>You can see that the interceptors themselves are functions
+that take the <span style="font-family:monospace">info_T</span> object as their argument and return
+boolean. Interceptors are called in the order they are registered;
+normally, all interceptor functions return <span style="font-family:monospace">true</span>, meaning that
+processing should continue with subsequent interceptors. If an
+interceptor returns <span style="font-family:monospace">false</span>, later interceptors are not
+called. You should only do that if you really know what you are doing.</p><p>Notice that the <span style="font-family:monospace">info_T</span> contains references to omniORB internal
+data types. The definitions of these types can be found in other
+header files within <span style="font-family:monospace">include/omniORB4</span> and
+<span style="font-family:monospace">include/omniORB4/internal</span>.</p>
+<h2 id="sec140" class="section">9.1&#XA0;&#XA0;Interceptor registration</h2>
+<p>All the interceptor singletons are registered within another singleton
+object of class <span style="font-family:monospace">omniInterceptors</span>. You retrieve a pointer to the
+object with the <span style="font-family:monospace">omniORB::getInterceptors()</span> function, which
+must be called after the ORB has been initialised with
+<span style="font-family:monospace">CORBA::ORB_init()</span>, but before the ORB is used. The code to
+register an interceptor looks, for example, like:</p><div class="lstlisting"><span style="font-size:small">omniInterceptors</span><span style="font-size:small">* </span><span style="font-size:small">interceptors</span><span style="font-size:small"> = </span><span style="font-size:small">omniORB</span><span style="font-size:small">::</span><span style="font-size:small">getInterceptors</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">interceptors</span><span style="font-size:small">-&gt;</span><span style="font-size:small">clientSendRequest</span><span style="font-size:small">.</span><span style="font-size:small">add</span><span style="font-size:small">(</span><span style="font-size:small">myInterceptorFunc</span><span style="font-size:small">);</span></div>
+<h2 id="sec141" class="section">9.2&#XA0;&#XA0;Available interceptors</h2>
+<p>The following interceptors are available:</p><dl class="description"><dt class="dt-description"><span style="font-weight:bold">encodeIOR</span></dt><dd class="dd-description"><br>
+Called when encoding an IOR to represent an object reference. This
+interception point allows the application to insert extra profile
+components into IORs. Note that you must understand and adhere to the
+rules about data stored in IORs, otherwise the IORs created may be
+invalid. omniORB itself uses this interceptor to insert various items,
+so you can see an example of its use in the
+<span style="font-family:monospace">insertSupportedComponents()</span> function defined in
+<span style="font-family:monospace">src/lib/omniORB/orbcore/ior.cc</span>.</dd><dt class="dt-description"><span style="font-weight:bold">decodeIOR</span></dt><dd class="dd-description"><br>
+Called when decoding an IOR. The application can use this to get out
+whatever information they put into IORs with encodeIOR. Again, see
+<span style="font-family:monospace">extractSupportedComponents()</span> in
+<span style="font-family:monospace">src/lib/omniORB/orbcore/ior.cc</span> for an example.</dd><dt class="dt-description"><span style="font-weight:bold">clientOpenConnection</span></dt><dd class="dd-description"><br>
+Called as a client opens a new connection to a server, after the
+connection is opened but before it is used to send a request. The
+interceptor function can set the <span style="font-family:monospace">info_T</span>&#X2019;s <span style="font-family:monospace">reject</span> member
+to <span style="font-family:monospace">true</span> to cause the client to immediately close the new
+connection and throw CORBA::TRANSIENT to the calling code. In that
+case, the interceptor function can also set the <span style="font-family:monospace">why</span> member to
+provide a message that is logged.</dd><dt class="dt-description"><span style="font-weight:bold">clientSendRequest</span></dt><dd class="dd-description"><br>
+Called just before a request header is sent over the network. The
+application can use it to insert service contexts in the header. See
+the <span style="font-family:monospace">setCodeSetServiceContext()</span> function in
+<span style="font-family:monospace">src/lib/omniORB/orbcore/cdrStream.cc</span> for an example of its use.</dd><dt class="dt-description"><span style="font-weight:bold">clientReceiveReply</span></dt><dd class="dd-description"><br>
+Called as the client receives a reply, just after unmarshalling the
+reply header. Called for normal replies and exceptions.</dd><dt class="dt-description"><span style="font-weight:bold">serverAcceptConnection</span></dt><dd class="dd-description"><br>
+Called when a server accepts a new incoming connection, but before it
+reads any data from it. The interceptor function can set the
+<span style="font-family:monospace">info_T</span>&#X2019;s <span style="font-family:monospace">reject</span> member to <span style="font-family:monospace">true</span> to cause the
+server to immediately close the new connection. In that case, the
+interceptor function can also set the <span style="font-family:monospace">why</span> member to provide a
+message that is logged.</dd><dt class="dt-description"><span style="font-weight:bold">serverReceiveRequest</span></dt><dd class="dd-description"><br>
+Called when the server receives a request, just after unmarshalling
+the request header. See the <span style="font-family:monospace">getCodeSetServiceContext()</span> function in
+<span style="font-family:monospace">src/lib/omniORB/orbcore/cdrStream.cc</span> for an example.</dd><dt class="dt-description"><span style="font-weight:bold">serverSendReply</span></dt><dd class="dd-description"><br>
+Called just before the server marshals a reply header.</dd><dt class="dt-description"><span style="font-weight:bold">serverSendException</span></dt><dd class="dd-description"><br>
+Called just before the server marshals an exception reply header.</dd><dt class="dt-description"><span style="font-weight:bold">createRope</span></dt><dd class="dd-description"><br>
+Called when the ORB is about to create a &#X2018;rope&#X2019; that encapsulates a
+bundle of connections (&#X2018;strands&#X2019;) to a remote address space. It allows
+application code to override omniORB&#X2019;s normal connection management.</dd><dt class="dt-description"><span style="font-weight:bold">createIdentity</span></dt><dd class="dd-description"><br>
+Called when the ORB is about to create an &#X2018;identity&#X2019; object to
+represent a CORBA object. It allows application code to provide its
+own identity implementations. It is very unlikely that an application
+will need to do this.</dd><dt class="dt-description"><span style="font-weight:bold">createORBServer</span></dt><dd class="dd-description"><br>
+Used internally by the ORB to register different kinds of server. At
+present, only a GIOP server is registered. It is very unlikely that
+application code will need to do this.</dd><dt class="dt-description"><span style="font-weight:bold">createThread</span></dt><dd class="dd-description"><br>
+Called whenever the ORB creates a thread. The <span style="font-family:monospace">info_T</span> class for
+this interceptor is<div class="lstlisting"><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">info_T</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">run</span><span style="font-size:small">() = 0;</span><span style="font-size:small">
+</span><span style="font-size:small">      </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small">omni_thread</span><span style="font-size:small">* </span><span style="font-size:small">self</span><span style="font-size:small">() = 0;</span><span style="font-size:small">
+</span><span style="font-size:small">    };</span></div><p>The interceptor is called in the context of the newly created thread.
+The function <em>must</em> call the <span style="font-family:monospace">info_T</span>&#X2019;s <span style="font-family:monospace">run()</span> method, to
+pass control to the thread body. <span style="font-family:monospace">run()</span> returns just before the
+thread exits. This arrangement allows the interceptor to initialise
+some per-thread state before the thread body runs, then release it
+just before the thread exits.</p><p>The <span style="font-family:monospace">info_T</span>&#X2019;s <span style="font-family:monospace">self()</span> method returns a pointer to the
+<span style="font-family:monospace">omni_thread</span> object for the thread, equivalent to calling
+<span style="font-family:monospace">omni_thread::self()</span>.</p></dd><dt class="dt-description"><span style="font-weight:bold">assignUpcallThread</span></dt><dd class="dd-description"><br>
+The ORB maintains a general thread pool, from which threads are drawn
+for various purposes. One purpose is for performing upcalls to
+application code, in response to incoming CORBA calls. The
+<span style="font-family:monospace">assignUpcallThread</span> interceptor is called when a thread is
+assigned to perform upcalls. In the thread per connection model, the
+thread stays assigned to performing upcalls for the entire lifetime of
+the underlying network connection; in the thread pool model, threads
+are assigned for upcalls on a per call basis, so this interceptor is
+triggered for every incoming call<sup><a id="text15" href="#note15">1</a></sup>. As with the <span style="font-family:monospace">createThread</span> interceptor, the
+interceptor function must call the <span style="font-family:monospace">info_T</span>&#X2019;s <span style="font-family:monospace">run()</span> method to
+pass control to the upcall.<p>When a thread finishes its assignment of processing upcalls, it
+returns to the pool (even in thread per connection mode), so the same
+thread can be reassigned to perform more upcalls, or reused for a
+different purpose.</p></dd><dt class="dt-description"><span style="font-weight:bold">assignAMIThread</span></dt><dd class="dd-description"><br>
+Asynchronous Method Invocation (AMI) uses threads to perform outgoing
+calls. The <span style="font-family:monospace">assignAMIThread</span> interceptor is called when a thread
+is assigned to perform AMI calls. As with the other thread
+interceptors, the interceptor function must call the <span style="font-family:monospace">info_T</span>&#X2019;s
+<span style="font-family:monospace">run()</span> method to pass control to the AMI call.<p>Unlike the other interceptors, the interceptor functions for
+<span style="font-family:monospace">createThread</span>, <span style="font-family:monospace">assignUpcallThread</span> and
+<span style="font-family:monospace">assignAMIThread</span> have no return values. Interceptor chaining is
+performed by calls through the <span style="font-family:monospace">info_T::run()</span> method, rather than
+by visiting interceptor functions in turn.</p></dd></dl>
+<h2 id="sec142" class="section">9.3&#XA0;&#XA0;Server-side call interceptor</h2>
+<p>Calls can be intercepted on the server just before the upcall into
+application code. This interceptor is registered with omniORB&#X2019;s
+<span style="font-family:monospace">callDescriptor</span> class, which is responsible for encapsulating
+the state of a call. Unlike the transport-related
+<span style="font-family:monospace">serverReceiveRequest</span>, <span style="font-family:monospace">serverSendReply</span> and
+<span style="font-family:monospace">serverSendException</span> interceptors, the <span style="font-family:monospace">callDescriptor</span>
+interceptor is invoked for <em>all</em> calls, even ones from colocated
+clients in the same address space.</p><p>The types used for the call interceptor are defined in
+<span style="font-family:monospace">include/omniORB4/callDescriptor.h</span>. The interceptor takes the
+form of a bare function with two parameters. The first parameter is a
+pointer to the <span style="font-family:monospace">callDescriptor</span>; the second is a pointer to
+<span style="font-family:monospace">omniServant</span>, which is the base class of all servant
+classes. The interceptor function must call the
+<span style="font-family:monospace">callDescriptor</span>&#X2019;s <span style="font-family:monospace">interceptedCall()</span> method to pass on the
+call.</p><p>This interception point allows access to various parts of omniORB&#X2019;s
+call machinery. The <span style="font-family:monospace">callDescriptor</span> includes access to the
+operation name and, if cast to the concrete subclass defined by the
+IDL compiler, the call arguments and return values too.</p>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note15" href="#text15">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">Except that with the
+<span style="font-family:monospace">threadPoolWatchConnection</span> parameter set <span style="font-family:monospace">true</span>, a thread
+can perform multiple upcalls even when thread pool mode is
+active.</div></dd></dl>
+<hr>
+<a href="omniORB008.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB010.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

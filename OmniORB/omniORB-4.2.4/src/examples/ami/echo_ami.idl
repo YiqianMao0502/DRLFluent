@@ -1,0 +1,8 @@
+// echo_ami.idl
+//
+// This is identical to echo.idl. It is a separate file to enable easy
+// compilation with AMI support.
+
+interface Echo {
+  string echoString(in string mesg);
+};

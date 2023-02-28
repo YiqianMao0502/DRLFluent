@@ -1,0 +1,39 @@
+// pollable.idl
+//
+// Definitions of standard CORBA::Pollable and related types.
+
+#ifndef _omniorb_pollable_idl_
+#define _omniorb_pollable_idl_
+
+#pragma prefix "omg.org"
+
+
+module CORBA {
+  local interface PollableSet;
+
+  abstract valuetype Pollable {
+    boolean is_ready(in unsigned long timeout);
+    PollableSet create_pollable_set();
+  };
+
+  abstract valuetype DIIPollable : Pollable { };
+
+  local interface PollableSet {
+    exception NoPossiblePollable { };
+    exception UnknownPollable { };
+
+    DIIPollable create_dii_pollable();
+
+    void add_pollable(in Pollable potential);
+
+    Pollable get_ready_pollable(in unsigned long timeout)
+      raises (NoPossiblePollable);
+
+    void remove(in Pollable potential)
+      raises (UnknownPollable);
+
+    unsigned short number_left();
+  };
+};
+
+#endif // _omniorb_pollable_idl_

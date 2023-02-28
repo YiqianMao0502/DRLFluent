@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Asynchronous Method Invocation</title>
+</head>
+<body >
+<a href="omniORB011.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB013.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec172" class="chapter">Chapter&#XA0;12&#XA0;&#XA0;Asynchronous Method Invocation</h1>
+<p>
+<a id="chap:ami"></a></p><p>omniORB 4.2 supports Asynchronous Method Invocation, AMI, as defined
+in the CORBA Messaging specification. It supports both the polling and
+callback models of asynchronous calls. Note that omniORB does not
+support the other parts of the Messaging specification such as Quality
+of Service, Routing and Persistent requests.</p><p>While omniORB mainly targets the 2.6 version of the CORBA
+specification, the AMI support follows the CORBA Messaging
+specification as described in the CORBA 3.1 specification, chapter
+17&#XA0;[<a href="omniORB016.html#corba31-spec">OMG08</a>]. That version of the specification is largely
+the same as the one in CORBA 2.6. The only significant difference is
+that exception replies in the callback model use a simpler
+interface-independent mapping.</p>
+<h2 id="sec173" class="section">12.1&#XA0;&#XA0;Implied IDL</h2>
+<p>AMI works by defining some additional <span style="font-style:italic">implied IDL</span> for each
+interface in the real IDL. The implied IDL contains type and
+operation definitions that enable asynchronous calls.</p><p>As a guide to the implied IDL, there is a special <span style="font-family:monospace">ami</span>
+back-end to omniidl that outputs the implied IDL for the given input
+IDL. For example, given the Echo example IDL:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// echo.idl</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Echo</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>You can output the implied IDL using</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bami echo.idl</span>
+</blockquote><p>That outputs the following to standard out:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// ReplyHandler for interface Echo</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">AMI_EchoHandler</span><span style="font-size:small"> : </span><span style="font-size:small">Messaging</span><span style="font-size:small">::</span><span style="font-size:small">ReplyHandler</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">ami_return_val</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">echoString_excep</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> ::</span><span style="font-size:small">Messaging</span><span style="font-size:small">::</span><span style="font-size:small">ExceptionHolder</span><span style="font-size:small"> </span><span style="font-size:small">excep_holder</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// Poller valuetype for interface Echo</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">abstract</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">AMI_EchoPoller</span><span style="font-size:small"> : </span><span style="font-size:small">Messaging</span><span style="font-size:small">::</span><span style="font-size:small">Poller</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">unsigned</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small"> </span><span style="font-size:small">ami_timeout</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">out</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">ami_return_val</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// AMI implied operations for interface Echo</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Echo</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">sendc_echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> ::</span><span style="font-size:small">AMI_EchoHandler</span><span style="font-size:small"> </span><span style="font-size:small">ami_handler</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  ::</span><span style="font-size:small">AMI_EchoPoller</span><span style="font-size:small"> </span><span style="font-size:small">sendp_echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Alternatively, you can use the <span style="font-family:monospace">-Wbdump</span> option to
+output an interleaved version that shows the original IDL and the
+implied IDL together.</p><p>Note that the implied IDL output is for information only. You should
+not compile it, but rather instruct the omniidl C++ back-end to
+generate the corresponding C++ definitions.</p>
+<h2 id="sec174" class="section">12.2&#XA0;&#XA0;Generating AMI stubs</h2>
+<p>To generate stub code including AMI types and operations, give the
+<span style="font-family:monospace">-Wbami</span> command line option to omniidl&#X2019;s <span style="font-family:monospace">cxx</span>
+back-end:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bcxx -Wbami echo.idl</span>
+</blockquote><p>That generates the normal C++ stubs and skeletons, plus all
+the definitions in the implied IDL.</p>
+<h2 id="sec175" class="section">12.3&#XA0;&#XA0;AMI examples</h2>
+<p>Example AMI clients for the <span style="font-family:monospace">Echo</span> server can be found in
+<span style="font-family:monospace">src/examples/ami</span>.</p>
+<hr>
+<a href="omniORB011.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB013.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

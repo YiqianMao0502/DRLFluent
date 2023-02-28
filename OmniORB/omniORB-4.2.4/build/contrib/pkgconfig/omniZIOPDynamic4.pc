@@ -1,0 +1,11 @@
+prefix=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: omniZIOPDynamic4
+Description: CORBA Object Request Broker - ZIOP Dynamic library
+Version: 4.2.4
+Requires: omniZIOP4
+Libs: -L${libdir} -lomniZIOPDynamic4
+Cflags:

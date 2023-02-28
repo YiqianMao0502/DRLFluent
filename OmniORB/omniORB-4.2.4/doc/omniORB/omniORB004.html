@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>omniORB configuration and API</title>
+</head>
+<body >
+<a href="omniORB003.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB005.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec52" class="chapter">Chapter&#XA0;4&#XA0;&#XA0;omniORB configuration and API</h1>
+<p>
+<a id="chap:config"></a></p><p>omniORB has a wide range of parameters that can be configured. They
+can be set in the configuration file / Windows registry, as
+environment variables, on the command line, or within a proprietary
+extra argument to <span style="font-family:monospace">CORBA::ORB_init()</span>. A few parameters can be
+configured at run time. This chapter lists all the configuration
+parameters, and how they are used.</p>
+<h2 id="sec53" class="section">4.1&#XA0;&#XA0;Setting parameters</h2>
+<p>When <span style="font-family:monospace">CORBA::ORB_init()</span> is called, the value for each configuration
+parameter is searched for in the following order:</p><ol class="enumerate" type=1><li class="li-enumerate">Command line arguments
+</li><li class="li-enumerate"><span style="font-family:monospace">ORB_init()</span> options
+</li><li class="li-enumerate">Environment variables
+</li><li class="li-enumerate">Configuration file / Windows registry
+</li><li class="li-enumerate">Built-in defaults</li></ol>
+<h3 id="sec54" class="subsection">4.1.1&#XA0;&#XA0;Command line arguments</h3>
+<p>Command line arguments take the form
+&#X2018;<span style="font-family:monospace">-ORB</span><span style="font-style:italic">parameter</span>&#X2019;, and usually expect another
+argument. An example is &#X2018;<span style="font-family:monospace">-ORBtraceLevel 10</span>&#X2019;.</p>
+<h3 id="sec55" class="subsection">4.1.2&#XA0;&#XA0;ORB_init() parameter</h3>
+<p><span style="font-family:monospace">ORB_init()</span>&#X2019;s extra argument accepts an array of two-dimensional
+string arrays, like this:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">char</span></span><span style="font-size:small">* </span><span style="font-size:small">options</span><span style="font-size:small">[][2] = { { </span><span style="font-size:small"><span style="font-size:small">"traceLevel"</span></span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-size:small">"1"</span></span><span style="font-size:small"> }, { 0, 0 } };</span><span style="font-size:small">
+</span><span style="font-size:small">orb</span><span style="font-size:small"> = </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ORB_init</span><span style="font-size:small">(</span><span style="font-size:small">argc</span><span style="font-size:small">,</span><span style="font-size:small">argv</span><span style="font-size:small">,</span><span style="font-size:small"><span style="font-size:small">"omniORB4"</span></span><span style="font-size:small">,</span><span style="font-size:small">options</span><span style="font-size:small">);</span></div>
+<h3 id="sec56" class="subsection">4.1.3&#XA0;&#XA0;Environment variables</h3>
+<p>Environment variables consist of the parameter name prefixed with
+&#X2018;<span style="font-family:monospace">ORB</span>&#X2019;. Using bash, for example</p><div class="lstlisting"><span style="font-size:small">export</span><span style="font-size:small"> </span><span style="font-size:small">ORBtraceLevel</span><span style="font-size:small">=10</span></div>
+<h3 id="sec57" class="subsection">4.1.4&#XA0;&#XA0;Configuration file</h3>
+<p>The best way to understand the format of the configuration file is to
+look at the <span style="font-family:monospace">sample.cfg</span> file in the omniORB distribution. Each
+parameter is set on a single line like</p><pre class="verbatim">traceLevel = 10
+</pre><p>Some parameters can have more than one value, in which case the
+parameter name may be specified more than once, or you can leave it
+out:</p><pre class="verbatim">InitRef = NameService=corbaname::host1.example.com
+        = InterfaceRepository=corbaloc::host2.example.com:1234/IfR
+</pre><div class="minipage"><hr style="height:2"><dl class="list"><dt class="dt-list">
+
+</dt><dd class="dd-list">
+Command line arguments and environment variables prefix parameter
+names with &#X2018;-ORB&#X2019; and &#X2018;ORB&#X2019; respectively, but the configuration file
+and the extra argument to <span style="font-family:monospace">ORB_init()</span> do not use a prefix.
+</dd></dl><hr style="height:2"></div>
+<h3 id="sec58" class="subsection">4.1.5&#XA0;&#XA0;Windows registry</h3>
+<p>On Windows, configuration parameters can be stored in the registry,
+under the key <span style="font-family:monospace">HKEY_LOCAL_MACHINE\SOFTWARE\omniORB</span>.</p><p>The file <span style="font-family:monospace">sample.reg</span> shows the settings that can be made. It can
+be edited and then imported into regedit.</p>
+<h2 id="sec59" class="section">4.2&#XA0;&#XA0;Tracing options</h2>
+<p>The following options control debugging trace output.</p><p><span style="font-family:monospace">traceLevel</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>omniORB can output tracing and diagnostic messages to the standard
+error stream. The following levels are defined:</p><table style="border-spacing:6px;border-collapse:separate;" class="cellpading0"><tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >&nbsp;</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >
+level 0</td><td style="vertical-align:top;text-align:left;" >critical errors only</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >level 1</td><td style="vertical-align:top;text-align:left;" >informational messages only</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >level 2</td><td style="vertical-align:top;text-align:left;" >configuration information and warnings</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >
+level 5</td><td style="vertical-align:top;text-align:left;" >notifications when server threads are
+created and communication endpoints are shutdown</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >
+level 10</td><td style="vertical-align:top;text-align:left;" >execution and exception traces</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >level 25</td><td style="vertical-align:top;text-align:left;" >trace each send or receive of a GIOP message</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >level 30</td><td style="vertical-align:top;text-align:left;" >dump up to 128 bytes of each GIOP message</td></tr>
+<tr><td style="vertical-align:top;text-align:left;white-space:nowrap" >level 40</td><td style="vertical-align:top;text-align:left;" >dump complete contents of each GIOP message</td></tr>
+</table><p>The trace level is cumulative, so at level 40, all trace
+messages are output.</p><p><span style="font-family:monospace">traceExceptions</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If the <span style="font-family:monospace">traceExceptions</span> parameter is set <span style="font-family:monospace">true</span>, all system
+exceptions are logged as they are thrown, along with details about
+where the exception is thrown from. This parameter is enabled by
+default if the traceLevel is set to 10 or more.</p><p><span style="font-family:monospace">traceInvocations</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If the <span style="font-family:monospace">traceInvocations</span> parameter is set <span style="font-family:monospace">true</span>, all local
+and remote invocations are logged, in addition to any logging that may
+have been selected with <span style="font-family:monospace">traceLevel</span>.</p><p><span style="font-family:monospace">traceInvocationReturns</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If the <span style="font-family:monospace">traceInvocationReturns</span> parameter is set <span style="font-family:monospace">true</span>, a
+log message is output as an operation invocation returns. In
+conjunction with <span style="font-family:monospace">traceInvocations</span> and <span style="font-family:monospace">traceTime</span>
+(described below), this provides a simple way of timing CORBA calls
+within your application.</p><p><span style="font-family:monospace">traceThreadId</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>If <span style="font-family:monospace">traceThreadId</span> is set <span style="font-family:monospace">true</span>, all trace messages are
+prefixed with the id of the thread outputting the message. This can be
+handy for making sense of multi-threaded code, but it adds overhead to
+the logging so it can be disabled.</p><p><span style="font-family:monospace">traceTime</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>If <span style="font-family:monospace">traceTime</span> is set <span style="font-family:monospace">true</span>, all trace messages are
+prefixed with the time. This is useful, but on some platforms it adds
+a very large overhead, so it can be turned off.</p><p><span style="font-family:monospace">traceFile</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+</p><p>omniORB&#X2019;s tracing is normally sent to stderr. If <span style="font-family:monospace">traceFile</span> it
+set, the specified file name is used for trace messages.</p>
+<h3 id="sec60" class="subsection">4.2.1&#XA0;&#XA0;Tracing API</h3>
+<p>The tracing parameters can be modified at runtime by assigning to the
+following variables</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small">   </span><span style="font-size:small">traceLevel</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">traceExceptions</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">traceInvocations</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">traceInvocationReturns</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">traceThreadId</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">traceTime</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Log messages can be sent somewhere other than stderr by registering a
+logging function which is called with the text of each log message:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> (*</span><span style="font-size:small">logFunction</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">char</span></span><span style="font-size:small">*);</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">setLogFunction</span><span style="font-size:small">(</span><span style="font-size:small">logFunction</span><span style="font-size:small"> </span><span style="font-size:small">f</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>The log function must not make any CORBA calls, since that could lead
+to infinite recursion as outputting a log message caused other log
+messages to be generated, and so on.</p>
+<h2 id="sec61" class="section">4.3&#XA0;&#XA0;Miscellaneous global options</h2>
+<p>These options control miscellaneous features that affect the whole ORB
+runtime.</p><p><span style="font-family:monospace">dumpConfiguration</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If set <span style="font-family:monospace">true</span>, the ORB dumps the values of all configuration
+parameters at start-up.</p><p><span style="font-family:monospace">scanGranularity</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">5</span></p><p>As explained in chapter&#XA0;<a href="omniORB006.html#chap%3Aconnections">6</a>, omniORB regularly
+scans incoming and outgoing connections, so it can close unused
+ones. This value is the granularity in seconds at which the ORB
+performs its scans. A value of zero turns off the scanning altogether.</p><p><span style="font-family:monospace">nativeCharCodeSet</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">ISO-8859-1</span></p><p>The native code set the application is using for <span style="font-family:monospace">char</span> and
+<span style="font-family:monospace">string</span>. See chapter&#XA0;<a href="omniORB008.html#chap%3Acodesets">8</a>.</p><p><span style="font-family:monospace">nativeWCharCodeSet</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">UTF-16</span></p><p>The native code set the application is using for <span style="font-family:monospace">wchar</span> and
+<span style="font-family:monospace">wstring</span>. See chapter&#XA0;<a href="omniORB008.html#chap%3Acodesets">8</a>.</p><p><span style="font-family:monospace">defaultCharCodeSet</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>The default code set used for <span style="font-family:monospace">char</span> and <span style="font-family:monospace">string</span> if the
+server does not specify it in its IORs. See
+chapter&#XA0;<a href="omniORB008.html#chap%3Acodesets">8</a>.</p><p><span style="font-family:monospace">defaultWCharCodeSet</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>The default code set used for <span style="font-family:monospace">wchar</span> and <span style="font-family:monospace">wstring</span> if the
+server does not specify it in its IORs. See
+chapter&#XA0;<a href="omniORB008.html#chap%3Acodesets">8</a>.</p><p><span style="font-family:monospace">copyValuesInLocalCalls</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>Determines whether valuetype parameters in local calls are copied or
+not. See chapter&#XA0;<a href="omniORB011.html#chap%3Avaluetype">11</a>.</p><p><span style="font-family:monospace">abortOnInternalError</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If this is set <span style="font-family:monospace">true</span>, internal fatal errors will abort
+immediately, rather than throwing the <span style="font-family:monospace">omniORB::fatalException</span>
+exception. This can be helpful for tracking down bugs, since it
+leaves the call stack intact.</p><p><span style="font-family:monospace">abortOnNativeException</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>On Windows, &#X2018;native&#X2019; exceptions such as segmentation faults and divide
+by zero appear as C++ exceptions that can be caught with <span style="font-family:monospace">catch
+(...)</span>. Setting this parameter to <span style="font-family:monospace">true</span> causes such exceptions
+to abort the process instead.</p><p><span style="font-family:monospace">maxSocketSend</span><br>
+<span style="font-family:monospace">maxSocketRecv</span><br>
+
+On some platforms, calls to send() and recv() have a limit on the
+buffer size that can be used. These parameters set the limits in bytes
+that omniORB uses when sending / receiving bulk data.</p><p>The default values are platform specific. It is unlikely that you will
+need to change the values from the defaults.</p><p>The minimum valid limit is 1KB, 1024 bytes.</p><p><span style="font-family:monospace">socketSendBuffer</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">-1 </span><span style="font-family:monospace"><span style="font-style:italic">or</span></span><span style="font-family:monospace"> 16384</span></p><p>On Windows, there is a kernel buffer used during send operations. A
+bug in Windows means that if a send uses the entire kernel buffer, a
+select() on the socket blocks until all the data has been acknowledged
+by the receiver, resulting in dreadful performance. This parameter
+modifies the socket send buffer from its default (8192 bytes on
+Windows) to the value specified. If this parameter is set to -1, the
+socket send buffer is left at the system default.</p><p>On Windows, the default value of this parameter is 16384 bytes; on all
+other platforms the default is -1.</p><p><span style="font-family:monospace">validateUTF8</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>When transmitting a string that is supposed to be UTF-8, omniORB
+usually passes it directly, assuming that it is valid. With this
+parameter set <span style="font-family:monospace">true</span>, omniORB checks that all UTF-8 strings are
+valid, and throws DATA_CONVERSION if not.</p>
+<h2 id="sec62" class="section">4.4&#XA0;&#XA0;Client side options</h2>
+<p>
+<a id="sec:clientconf"></a></p><p>These options control aspects of client-side behaviour.</p><p><span style="font-family:monospace">InitRef</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>Specify objects available from
+<span style="font-family:monospace">ORB::resolve_initial_references()</span>. The arguments take the form
+&lt;<span style="font-style:italic">key</span>&gt;=&lt;<span style="font-style:italic">uri</span>&gt;, where <span style="font-style:italic">key</span> is the name given to
+<span style="font-family:monospace">resolve_initial_references()</span> and <span style="font-style:italic">uri</span> is a
+valid CORBA object reference URI, as detailed in
+chapter&#XA0;<a href="omniORB007.html#chap%3Ains">7</a>.</p><p><span style="font-family:monospace">DefaultInitRef</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>Specify the default URI prefix for
+<span style="font-family:monospace">resolve_initial_references()</span>, as explained in
+chapter&#XA0;<a href="omniORB007.html#chap%3Ains">7</a>.</p><p><span style="font-family:monospace">clientTransportRule</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">* unix,tcp,ssl</span></p><p>Used to specify the way the client contacts a server, depending on the
+server&#X2019;s address. See section&#XA0;<a href="omniORB006.html#sec%3AclientRule">6.7.1</a> for details.</p><p><span style="font-family:monospace">clientCallTimeOutPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>Call timeout in milliseconds for the client side. If a call takes
+longer than the specified number of milliseconds, the ORB closes the
+connection to the server and raises a <span style="font-family:monospace">TRANSIENT</span> exception. A
+value of zero means no timeout; calls can block for ever. See
+section&#XA0;<a href="omniORB006.html#sec%3AtimeoutAPI">6.3.1</a> for more information about timeouts.</p><p><span style="font-weight:bold">Note</span>: omniORB 3 had timeouts specified in seconds;
+omniORB 4.0 and later use milliseconds for timeouts.</p><p><span style="font-family:monospace">clientConnectTimeOutPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>The timeout that is used in the case that a new network connection is
+established to the server. A value of zero means that the normal call
+timeout is used. See section&#XA0;<a href="omniORB006.html#sec%3AtimeoutAPI">6.3.1</a> for more information
+about timeouts.</p><p><span style="font-family:monospace">supportPerThreadTimeOut</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If this parameter is set <span style="font-family:monospace">true</span>, timeouts can be set on a per
+thread basis, as well as globally and per object. Checking per-thread
+storage has a noticeable performance impact, so it is turned off by
+default.</p><p><span style="font-family:monospace">resetTimeoutOnRetries</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If <span style="font-family:monospace">true</span>, the call timeout is reset when an exception handler
+causes a call to be retried. If <span style="font-family:monospace">false</span>, the timeout is not
+reset, and therefore applies to the call as a whole, rather than to
+each individual call attempt.</p><p><span style="font-family:monospace">throwTransientOnTimeout</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>omniORB 4.2 supports the <span style="font-family:monospace">CORBA::TIMEOUT</span> exception that is part
+of the CORBA Messaging specification. By default, that is the
+exception thrown when timeouts occur. Previous omniORB releases did
+not have the <span style="font-family:monospace">CORBA::TIMEOUT</span> exception, and instead used
+<span style="font-family:monospace">CORBA::TRANSIENT</span>. If this parameter is set <span style="font-family:monospace">true</span>, omniORB
+follows the old behaviour of throwing <span style="font-family:monospace">CORBA::TRANSIENT</span> when a
+timeout occurs.</p><p><span style="font-family:monospace">outConScanPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">120</span></p><p>Idle timeout in seconds for outgoing (i.e. client initiated)
+connections. If a connection has been idle for this amount of time,
+the ORB closes it. See section&#XA0;<a href="omniORB006.html#sec%3AconnShutdown">6.5</a>.</p><p><span style="font-family:monospace">maxGIOPConnectionPerServer</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">5</span></p><p>The maximum number of concurrent connections the ORB will open to a
+<em>single</em> server. If multiple threads on the client call the same
+server, the ORB opens additional connections to the server, up to the
+maximum specified by this parameter. If the maximum is reached,
+threads are blocked until a connection becomes free for them to use.</p><p><span style="font-family:monospace">oneCallPerConnection</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>When this parameter is set to <span style="font-family:monospace">true</span> (the default), the ORB will
+only send a single call on a connection at a time. If multiple client
+threads invoke on the same server, multiple connections are opened, up
+to the limit specified by
+<span style="font-family:monospace">maxGIOPConnectionPerServer</span>. With this parameter set to
+<span style="font-family:monospace">false</span>, the ORB will allow concurrent calls on a single
+connection. This saves connection resources, but requires slightly
+more management work for both client and server. Some server-side ORBs
+(including omniORB versions before 4.0) serialise all incoming calls
+on a single connection.</p><p><span style="font-family:monospace">maxInterleavedCallsPerConnection</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">5</span></p><p>The maximum number of calls that can be interleaved on a connection.
+If more concurrent calls are made, they are queued.</p><p><span style="font-family:monospace">offerBiDirectionalGIOP</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If set <span style="font-family:monospace">true</span>, the client will indicate to servers that it is
+willing to accept callbacks on client-initiated connections using
+bidirectional GIOP, provided the relevant POA policies are set. See
+section&#XA0;<a href="omniORB006.html#sec%3Abidir">6.8</a>.</p><p><span style="font-family:monospace">diiThrowsSysExceptions</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If this is <span style="font-family:monospace">true</span>, DII functions throw system exceptions; if it
+is <span style="font-family:monospace">false</span>, system exceptions that occur are passed through the
+<span style="font-family:monospace">Environment</span> object.</p><p><span style="font-family:monospace">verifyObjectExistsAndType</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>By default, omniORB uses the GIOP <span style="font-family:monospace">LOCATE_REQUEST</span> message to
+verify the existence of an object prior to the first invocation. In
+the case that the full type of the object is not known, it instead
+calls the <span style="font-family:monospace">_is_a()</span> operation to check the object&#X2019;s type. Some ORBs
+have bugs that mean one or other of these operations fail. Setting
+this parameter <span style="font-family:monospace">false</span> prevents omniORB from making these calls.</p><p><span style="font-family:monospace">giopTargetAddressMode</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>GIOP 1.2 supports three addressing modes for contacting objects. This
+parameter selects the mode that omniORB uses. A value of 0 means
+<span style="font-family:monospace">GIOP::KeyAddr</span>; 1 means <span style="font-family:monospace">GIOP::ProfileAddr</span>; 2 means
+<span style="font-family:monospace">GIOP::ReferenceAddr</span>.</p><p><span style="font-family:monospace">immediateAddressSwitch</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If <span style="font-family:monospace">true</span>, the client will immediately switch to use a new
+address to contact an object after a failure. If <span style="font-family:monospace">false</span> (the
+default), the current address will be retried in certain
+circumstances.</p><p><span style="font-family:monospace">resolveNamesForTransportRules</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>If <span style="font-family:monospace">true</span>, names in IORs will be resolved when evaluating client
+transport rules, and remembered from then on; if <span style="font-family:monospace">false</span>, names
+will not be resolved until connect time. Client transport rules based
+on IP address will therefore not match, but some platforms can use
+external knowledge to pick the best address to use if given a name to
+connect to.</p><p><span style="font-family:monospace">retainAddressOrder</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>For IORs with multiple addresses, determines how the address to
+connect to is chosen. When first establishing a connection, the
+addresses are ordered according to the client transport rules (after
+resolving names if <span style="font-family:monospace">resolveNamesForTransportRules</span> is
+<span style="font-family:monospace">true</span>), and the addresses are tried in priority order until one
+connects successfully. For as long as there is at least one connection
+open to the address, new connections continue to use the same address.</p><p>After a failure, or after all open connections have been scavenged and
+closed, this parameter determines the address used to reconnect on the
+next call. If this parameter is <span style="font-family:monospace">true</span> (the default), the address
+order and chosen address within the order is remembered; if
+<span style="font-family:monospace">false</span>, a new connection attempt causes re-evaluation of the
+order (in case name resolutions change), and the highest priority
+address is tried first.</p><p><span style="font-family:monospace">bootstrapAgentHostname</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>If set, this parameter indicates the hostname to use for look-ups
+using the obsolete Sun bootstrap agent. This mechanism is superseded
+by the interoperable naming service.</p><p><span style="font-family:monospace">bootstrapAgentPort</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">900</span></p><p>The port number for the obsolete Sun bootstrap agent.</p><p><span style="font-family:monospace">principal</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace"><span style="font-style:italic">none</span></span></p><p>GIOP 1.0 and 1.1 have a request header field named &#X2018;principal&#X2019;, which
+contains a sequence of octets. It was never defined what it should
+mean, and its use is now deprecated; GIOP 1.2 has no such field. Some
+systems (e.g. Gnome) use the principal field as a primitive
+authentication scheme. This parameter sets the data omniORB uses in
+the principal field. The default is an empty sequence.</p>
+<h2 id="sec63" class="section">4.5&#XA0;&#XA0;Server side options</h2>
+<p>These parameters affect server-side operations.</p><p><span style="font-family:monospace">endPoint&#XA0;&#XA0;&#XA0;&#XA0;&#XA0;&#XA0;&#XA0;&#XA0;&#XA0;</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> = <span style="font-family:monospace">giop:tcp::</span><br>
+<span style="font-family:monospace">endPointNoListen</span><br>
+<span style="font-family:monospace">endPointPublish</span><br>
+<span style="font-family:monospace">endPointNoPublish</span><br>
+<span style="font-family:monospace">endPointPublishAllIFs</span><br>
+
+These options determine the end-points the ORB should listen on, and
+the details that should be published in IORs. See
+chapter&#XA0;<a href="omniORB006.html#chap%3Aconnections">6</a> for details.</p><p><span style="font-family:monospace">serverTransportRule</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">* unix,tcp,ssl</span></p><p>Configure the rules about whether a server should accept an incoming
+connection from a client. See section&#XA0;<a href="omniORB006.html#sec%3AserverRule">6.7.2</a> for
+details.</p><p><span style="font-family:monospace">serverCallTimeOutPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>This timeout is used to catch the situation that the server starts
+receiving a request, but the end of the request never comes. If a
+calls takes longer than the specified number of milliseconds to
+arrive, the ORB shuts the connection. A value of zero means never
+timeout.</p><p><span style="font-family:monospace">inConScanPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">180</span></p><p>Idle timeout in seconds for incoming connections. If a connection has
+been idle for this amount of time, the ORB closes it. See
+section&#XA0;<a href="omniORB006.html#sec%3AconnShutdown">6.5</a>.</p><p><span style="font-family:monospace">threadPerConnectionPolicy</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>If <span style="font-family:monospace">true</span> (the default), the ORB dedicates one server thread to
+each incoming connection. Setting it <span style="font-family:monospace">false</span> means the server
+should use a thread pool.</p><p><span style="font-family:monospace">maxServerThreadPerConnection</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">100</span></p><p>If the client multiplexes several concurrent requests on a single
+connection, omniORB uses extra threads to service them. This parameter
+specifies the maximum number of threads that are allowed to service a
+single connection at any one time.</p><p><span style="font-family:monospace">maxServerThreadPoolSize</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">100</span></p><p>The maximum number of threads the server will allocate to do various
+tasks, including dispatching calls in the thread pool mode. This
+number does not include threads dispatched under the thread per
+connection server mode.</p><p><span style="font-family:monospace">threadPerConnectionUpperLimit</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">10000</span></p><p>If the <span style="font-family:monospace">threadPerConnectionPolicy</span> parameter is <span style="font-family:monospace">true</span>, the
+ORB can automatically transition to thread pool mode if too many
+connections arrive. This parameter sets the number of connections at
+which thread pooling is started. The default of 10000 is designed to
+mean that it never happens.</p><p><span style="font-family:monospace">threadPerConnectionLowerLimit</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">9000</span></p><p>If thread pooling was started because the number of connections hit
+the upper limit, this parameter determines when thread per connection
+should start again.</p><p><span style="font-family:monospace">threadPoolWatchConnection</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>After dispatching an upcall in thread pool mode, the thread that has
+just performed the call can watch the connection for a short time
+before returning to the pool. This leads to less thread switching for
+a series of calls from a single client, but is less fair if there are
+concurrent clients. The connection is watched if the number of threads
+concurrently handling the connection is less than or equal to the
+value of this parameter. i.e. if the parameter is zero, the
+connection is never watched; if it is 1, the last thread managing a
+connection watches it; if 2, the connection is still watched if there
+is one other thread still in an upcall for the connection, and so
+on. See section&#XA0;<a href="omniORB006.html#sec%3AwatchConn">6.4.2</a>.</p><p><span style="font-family:monospace">connectionWatchPeriod</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">50000</span></p><p>For each endpoint, the ORB allocates a thread to watch for new
+connections and to monitor existing connections for calls that should
+be handed by the thread pool. The thread blocks in select() or similar
+for a period, after which it re-scans the lists of connections it
+should watch. This parameter is specified in microseconds.</p><p><span style="font-family:monospace">connectionWatchImmediate</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>When a thread handles an incoming call, it unmarshals the arguments
+then marks the connection as watchable by the connection watching
+thread, in case the client sends a concurrent call on the same
+connection. If this parameter is set to the default <span style="font-family:monospace">false</span>, the
+connection is not actually watched until the next connection watch
+period (determined by the <span style="font-family:monospace">connectionWatchPeriod</span> parameter). If
+this parameter is set <span style="font-family:monospace">true</span>, the connection watching thread is
+immediately signalled to watch the connection. That leads to faster
+interactive response to clients that multiplex calls, but adds
+significant overhead along the call chain.</p><p>Note that this setting has no effect on Windows, since it has no
+mechanism for signalling the connection watching thread.</p><p><span style="font-family:monospace">acceptBiDirectionalGIOP</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>Determines whether a server will ever accept clients&#X2019; offers of
+bidirectional GIOP connections. See section&#XA0;<a href="omniORB006.html#sec%3Abidir">6.8</a>.</p><p><span style="font-family:monospace">unixTransportDirectory</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">/tmp/omni-%u</span></p><p>(Unix platforms only). Selects the location used to store Unix domain
+sockets. The &#X2018;<span style="font-family:monospace">%u</span>&#X2019; is expanded to the user name.</p><p><span style="font-family:monospace">unixTransportPermission</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0777</span></p><p>(Unix platforms only). Determines the octal permission bits for Unix
+domain sockets. By default, all users can connect to a server, just as
+with TCP.</p><p><span style="font-family:monospace">supportCurrent</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>omniORB supports the <span style="font-family:monospace">PortableServer::Current</span> interface to
+provide thread context information to servants. Supporting current has
+a small but noticeable run-time overhead due to accessing thread
+specific storage, so this option allows it to be turned off.</p><p><span style="font-family:monospace">objectTableSize</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>Hash table size of the Active Object Map. If this is zero, the ORB
+uses a dynamically resized open hash table. This is normally the best
+option, but it leads to less predictable performance since any
+operation which adds or removes a table entry may trigger a resize. If
+set to a non-zero value, the hash table has the specified number of
+entries, and is never resized. Note that the hash table is open, so
+this does not limit the number of active objects, just how efficiently
+they can be located.</p><p><span style="font-family:monospace">poaHoldRequestTimeout</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If a POA is put in the <span style="font-family:monospace">HOLDING</span> state, calls to it will be timed
+out after the specified number of milliseconds, by raising a
+<span style="font-family:monospace">CORBA::TIMEOUT</span> exception. Zero means no timeout.</p><p><span style="font-family:monospace">poaUniquePersistentSystemIds</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>The POA specification requires that object ids in POAs with the
+PERSISTENT and SYSTEM_ID policies are unique between instantiations
+of the POA. Older versions of omniORB did not comply with that, and
+reused object ids. With this value <span style="font-family:monospace">true</span>, the POA has the
+correct behaviour; with <span style="font-family:monospace">false</span>, the POA uses the old scheme for
+compatibility.</p><p><span style="font-family:monospace">idleThreadTimeout</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">10</span></p><p>When a thread created by omniORB becomes idle, it is kept alive for a
+while, in case a new thread is required. Once a thread has been idle
+for the number of seconds specified in this parameter, it exits.</p><p><span style="font-family:monospace">supportBootstrapAgent</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If set <span style="font-family:monospace">true</span>, servers support the Sun bootstrap agent protocol.</p>
+<h3 id="sec64" class="subsection">4.5.1&#XA0;&#XA0;Main thread selection</h3>
+<p>There is one server-side parameter that must be set with an API
+function, rather than a normal configuration parameter:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">setMainThread</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>POAs with the <span style="font-family:monospace">MAIN_THREAD</span> policy dispatch calls on the &#X2018;main&#X2019;
+thread. By default, omniORB assumes that the thread that initialised
+the omnithread library is the &#X2018;main&#X2019; thread. To choose a different
+thread, call this function from the desired &#X2018;main&#X2019; thread. The calling
+thread must have an <span style="font-family:monospace">omni_thread</span> associated with it (i.e. it
+must have been created by omnithread, or
+<span style="font-family:monospace">omni_thread::create_dummy()</span> must have been called). If it
+does not, the function throws <span style="font-family:monospace">CORBA::INITIALIZE</span>.</p><p>Note that calls are only actually dispatched to the &#X2018;main&#X2019; thread if
+<span style="font-family:monospace">ORB::run()</span> or <span style="font-family:monospace">ORB::perform_work()</span> is called from that thread.</p>
+<h2 id="sec65" class="section">4.6&#XA0;&#XA0;GIOP and interoperability options</h2>
+<p>These options control omniORB&#X2019;s use of GIOP, and cover some areas
+where omniORB can work around buggy behaviour by other ORBs.</p><p><span style="font-family:monospace">maxGIOPVersion</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1.2</span></p><p>Choose the maximum GIOP version the ORB should support. Valid values
+are 1.0, 1.1 and 1.2.</p><p><span style="font-family:monospace">giopMaxMsgSize</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">2097152</span></p><p>The largest message, in bytes, that the ORB will send or receive, to
+avoid resource starvation. If the limit is exceeded, a <span style="font-family:monospace">MARSHAL</span>
+exception is thrown. The size must be &gt;= 8192.</p><p><span style="font-family:monospace">strictIIOP</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>If <span style="font-family:monospace">true</span>, be strict about interpretation of the IIOP
+specification; if <span style="font-family:monospace">false</span>, permit some buggy behaviour to pass.</p><p><span style="font-family:monospace">lcdMode</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If <span style="font-family:monospace">true</span>, select &#X2018;Lowest Common Denominator&#X2019; mode. This disables
+various IIOP and GIOP features that are known to cause problems with
+some ORBs.</p><p><span style="font-family:monospace">tcAliasExpand</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>This flag is used to indicate whether TypeCodes associated with Anys
+should have aliases removed. This functionality is included because
+some ORBs will not recognise an Any containing a TypeCode with aliases
+to be the same as the actual type contained in the Any. There is a
+performance penalty when inserting into an Any if <span style="font-family:monospace">tcAliasExpand</span>
+is set to 1.</p><p><span style="font-family:monospace">useTypeCodeIndirections</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">1</span></p><p>TypeCode Indirections reduce the size of marshalled TypeCodes, and are
+essential for recursive types, but some old ORBs do not support them.
+Setting this flag to <span style="font-family:monospace">false</span> prevents the use of indirections
+(and, therefore, prevents the use of recursive TypeCodes).</p><p><span style="font-family:monospace">acceptMisalignedTcIndirections</span> &#XA0;&#XA0; <span style="font-style:italic">default</span> =
+<span style="font-family:monospace">0</span></p><p>If <span style="font-family:monospace">true</span>, try to fix a mis-aligned indirection in a
+typecode. This is used to work around a bug in some old versions of
+Visibroker&#X2019;s Java ORB.</p>
+<h2 id="sec66" class="section">4.7&#XA0;&#XA0;System Exception Handlers</h2>
+<p>By default, all system exceptions that are raised during an operation
+invocation, with the exception of some cases of
+<span style="font-family:monospace">CORBA::TRANSIENT</span>, are propagated to the application code. Some
+applications may prefer to trap these exceptions within the proxy
+objects so that the application logic does not have to deal with the
+error condition. For example, when a <span style="font-family:monospace">CORBA::COMM_FAILURE</span> is
+received, an application may just want to retry the invocation until
+it finally succeeds. This approach is useful for objects that are
+persistent and have idempotent operations.</p><p>omniORB provides a set of functions to install exception handlers.
+Once they are installed, proxy objects will call these handlers when
+the associated system exceptions are raised by the ORB runtime.
+Handlers can be installed for <span style="font-family:monospace">CORBA::TRANSIENT</span>,
+<span style="font-family:monospace">CORBA::TIMEOUT</span>, <span style="font-family:monospace">CORBA::COMM_FAILURE</span> and
+<span style="font-family:monospace">CORBA::SystemException</span>. This last handler covers all
+system exceptions other than the three specific ones covered by the
+first three handlers. An exception handler can be installed for
+individual proxy objects, or it can be installed for all proxy objects
+in the address space.</p>
+<h3 id="sec67" class="subsection">4.7.1&#XA0;&#XA0;Minor codes</h3>
+<p>omniORB makes extensive use of exception minor codes to indicate the
+specific circumstances surrounding a system exception. The file
+<span style="font-family:monospace">include/omniORB4/minorCode.h</span> contains definitions of all the
+minor codes used in omniORB, covering codes allocated in the CORBA
+specification, and ones specific to omniORB. In compilers with
+namespace support, the minor code constants appear in namespace
+<span style="font-family:monospace">omni</span>; otherwise they are in the global scope.</p><p>Applications can use minor codes to adjust their behaviour according
+to the condition, e.g.</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">try</span></span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  ...</span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">catch</span></span><span style="font-size:small"> (</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">if</span></span><span style="font-size:small"> (</span><span style="font-size:small">ex</span><span style="font-size:small">.</span><span style="font-size:small">minor</span><span style="font-size:small">() == </span><span style="font-size:small">omni</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT_ConnectFailed</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// retry with a different object reference...</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">  }</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">else</span></span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// print an error message...</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">  }</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div>
+<h3 id="sec68" class="subsection">4.7.2&#XA0;&#XA0;CORBA::TRANSIENT handlers</h3>
+<p><span style="font-family:monospace">TRANSIENT</span> exceptions can occur in many circumstances. One
+circumstance is as follows:</p><ol class="enumerate" type=1><li class="li-enumerate">The client invokes on an object reference.
+</li><li class="li-enumerate">The object replies with a <span style="font-family:monospace">LOCATION_FORWARD</span> message.
+</li><li class="li-enumerate">The client caches the new location and retries to the new location.
+</li><li class="li-enumerate">Time passes...
+</li><li class="li-enumerate">The client tries to invoke on the object again, using the
+cached, forwarded location. 
+</li><li class="li-enumerate">The attempt to contact the object fails.
+</li><li class="li-enumerate">The ORB runtime resets the location cache and throws a
+<span style="font-family:monospace">TRANSIENT</span> exception with minor code
+<span style="font-family:monospace">TRANSIENT_FailedOnForwarded</span>.</li></ol><p>In this situation, the default <span style="font-family:monospace">TRANSIENT</span> exception handler
+retries the call, using the object&#X2019;s original location. If the retry
+results in another <span style="font-family:monospace">LOCATION_FORWARD</span>, to the same or a
+different location, and <em>that</em> forwarded location fails
+immediately, the <span style="font-family:monospace">TRANSIENT</span> exception will occur again, and the
+pattern will repeat. With repeated exceptions, the handler starts
+adding delays before retries, with exponential back-off.</p><p>In all other circumstances, the default <span style="font-family:monospace">TRANSIENT</span> handler just
+passes the exception on to the caller.</p><p>Applications can override the default behaviour by installing their
+own exception handler. The API to do so is summarised below:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small">
+</span><span style="font-size:small">  (*</span><span style="font-size:small">transientExceptionHandler_t</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                 </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">n_retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                 </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">installTransientExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small">transientExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">installTransientExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small">transientExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div><p>The overloaded <span style="font-family:monospace">installTransientExceptionHandler()</span> function is used
+to install the exception handlers for <span style="font-family:monospace">CORBA::TRANSIENT</span>. Two
+forms are available: the first form installs an exception handler for
+all object references except for those which have an exception handler
+installed by the second form, which takes an additional argument to
+identify the target object reference. The argument <span style="font-family:monospace">cookie</span> is an
+opaque pointer which will be passed on by the ORB when it calls the
+exception handler.</p><p>An exception handler will be called by proxy objects with three
+arguments. The <span style="font-family:monospace">cookie</span> is the opaque pointer registered by
+<span style="font-family:monospace">installTransientExceptionHandler()</span>. The argument
+<span style="font-family:monospace">n_retries</span> is the number of times the proxy has called this
+handler for the same invocation. The argument <span style="font-family:monospace">ex</span> is the value
+of the exception caught. The exception handler is expected to do
+whatever is appropriate and return a boolean value. If the return
+value is <span style="font-family:monospace">true</span>, the proxy object retries the operation. If the
+return value is <span style="font-family:monospace">false</span>, the original exception is propagated
+into the application code. In the case of a <span style="font-family:monospace">TRANSIENT</span> exception
+due to a failed location forward, the exception propagated to the
+application is the <em>original</em> exception that caused the
+<span style="font-family:monospace">TRANSIENT</span> (e.g. a <span style="font-family:monospace">COMM_FAILURE</span> or
+<span style="font-family:monospace">OBJECT_NOT_EXIST</span>), rather than the <span style="font-family:monospace">TRANSIENT</span>
+exception<sup><a id="text9" href="#note9">1</a></sup>.</p><p>The following sample code installs a simple exception handler for all
+objects and for a specific object:</p><div class="lstlisting"><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">my_transient_handler1</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                     </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                     </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">{</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">cerr</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"transient handler 1 called."</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-weight:bold">return</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">true</span></span><span style="font-size:small">;           </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// retry immediately.</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small"> </span><span style="font-size:small">my_transient_handler2</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                     </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                     </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">{</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">cerr</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"transient handler 2 called."</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-weight:bold">return</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">false</span></span><span style="font-size:small">;          </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// do not retry.</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">static</span></span><span style="font-size:small"> </span><span style="font-size:small">Echo_ptr</span><span style="font-size:small"> </span><span style="font-size:small">myobj</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">installhandlers</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">{</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">omniORB</span><span style="font-size:small">::</span><span style="font-size:small">installTransientExceptionHandler</span><span style="font-size:small">(0, </span><span style="font-size:small">my_transient_handler1</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// All proxy objects will call my_transient_handler1 from now on.</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small">omniORB</span><span style="font-size:small">::</span><span style="font-size:small">installTransientExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small">myobj</span><span style="font-size:small">, 0, </span><span style="font-size:small">my_transient_handler2</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">   </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// The proxy object of myobj will call my_transient_handler2 from now on.</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div>
+<h3 id="sec69" class="subsection">4.7.3&#XA0;&#XA0;CORBA::TIMEOUT</h3>
+<p>When a call timeout occurs, by default the ORB throws
+<span style="font-family:monospace">CORBA::TIMEOUT</span>. The default behaviour of the proxy objects is
+to propagate this exception to the application. Applications can
+override the default behaviour by installing their own exception
+handlers. The API to do so is summarised below:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small">
+</span><span style="font-size:small">(*</span><span style="font-size:small">timeoutExceptionHandler_t</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                             </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">n_retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                             </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TIMEOUT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installTimeoutExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                               </span><span style="font-size:small">timeoutExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installTimeoutExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                               </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                               </span><span style="font-size:small">timeoutExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span></div><p>The functions are equivalent to their counterparts for
+<span style="font-family:monospace">CORBA::TRANSIENT</span>.</p><p>omniORB version 4.1 and earlier did not have the <span style="font-family:monospace">CORBA::TIMEOUT</span>
+exception, and threw <span style="font-family:monospace">CORBA::TRANSIENT</span> instead. If the
+<span style="font-family:monospace">throwTransientOnTimeout</span> configuration parameter is set to
+<span style="font-family:monospace">1</span>, omniORB 4.2 reverts to this behaviour, and calls the
+transient exception handler instead of the timeout exception handler.</p><p>The timeout exception handler is used when a CORBA call times out. It
+is <em>not</em> called when an AMI poller operation throws
+<span style="font-family:monospace">CORBA::TIMEOUT</span>. In that situation, the exception is always
+propagated to the caller.</p>
+<h3 id="sec70" class="subsection">4.7.4&#XA0;&#XA0;CORBA::COMM_FAILURE</h3>
+<p>If the ORB has successfully contacted a server at some point, and
+access to it subsequently fails (and the condition for
+<span style="font-family:monospace">TRANSIENT</span> described above does not occur), the ORB raises a
+<span style="font-family:monospace">CORBA::COMM_FAILURE</span> exception.</p><p>The default behaviour of the proxy objects is to propagate this
+exception to the application. Applications can override the default
+behaviour by installing their own exception handlers. The API to do so
+is summarised below:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small">
+</span><span style="font-size:small">(*</span><span style="font-size:small">commFailureExceptionHandler_t</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                 </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">n_retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                 </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">COMM_FAILURE</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installCommFailureExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small">commFailureExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installCommFailureExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                   </span><span style="font-size:small">commFailureExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span></div><p>The functions are equivalent to their counterparts for
+<span style="font-family:monospace">CORBA::TRANSIENT</span>.</p>
+<h3 id="sec71" class="subsection">4.7.5&#XA0;&#XA0;CORBA::SystemException</h3>
+<p>If a system exceptions other than <span style="font-family:monospace">TRANSIENT</span>, <span style="font-family:monospace">TIMEOUT</span> or
+<span style="font-family:monospace">COMM_FAILURE</span> occurs, the default behaviour of the proxy
+objects is to propagate this exception to the application.
+Applications can override the default behaviour by installing their
+own exception handlers. The API to do so is summarised below:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small">
+</span><span style="font-size:small">(*</span><span style="font-size:small">systemExceptionHandler_t</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                            </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small"> </span><span style="font-size:small">n_retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                            </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">SystemException</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installSystemExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                              </span><span style="font-size:small">systemExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">installSystemExceptionHandler</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                              </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                              </span><span style="font-size:small">systemExceptionHandler_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span></div><p>The functions are equivalent to their counterparts for
+<span style="font-family:monospace">CORBA::TRANSIENT</span>.</p>
+<h3 id="sec72" class="subsection">4.7.6&#XA0;&#XA0;Extended exception handlers</h3>
+<p>New in omniORB 4.2, each of the exception handlers described above
+also has an &#X2018;extended&#X2019; form in which the exception handler takes two
+additional parameters, the object reference being invoked upon, and a
+string containing the name of the operation invoked. e.g.:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Boolean</span><span style="font-size:small">
+</span><span style="font-size:small">  (*</span><span style="font-size:small">transientExceptionHandlerExt_t</span><span style="font-size:small">)(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">*                   </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                    </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">ULong</span><span style="font-size:small">            </span><span style="font-size:small">n_retries</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                    </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TRANSIENT</span><span style="font-size:small">&amp; </span><span style="font-size:small">ex</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                    </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small">       </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                    </span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">char</span></span><span style="font-size:small">*             </span><span style="font-size:small">op</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">installTransientExceptionHandlerExt</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                     </span><span style="font-size:small">transientExceptionHandlerExt_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">installTransientExceptionHandlerExt</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">obj</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                      </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small">* </span><span style="font-size:small">cookie</span><span style="font-size:small">,</span><span style="font-size:small">
+</span><span style="font-size:small">                                      </span><span style="font-size:small">transientExceptionHandlerExt_t</span><span style="font-size:small"> </span><span style="font-size:small">fn</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div><p>Note that the operation parameter can sometimes be null. By default,
+omniORB sends a <span style="font-family:monospace">LocateRequest</span> message prior to the first
+operation invocation on an object reference. That <span style="font-family:monospace">LocateRequest</span>
+is subject to the same exception handling mechanism as a normal
+operation invocation, but it is represented with a null operation
+name. Exception handler code that uses the operation name must
+correctly handle a null operation name pointer.</p>
+<h2 id="sec73" class="section">4.8&#XA0;&#XA0;Location forwarding</h2>
+<p>
+<a id="sec:locationForward"></a></p><p>Any CORBA operation invocation can return a <span style="font-family:monospace">LOCATION_FORWARD</span>
+message to the caller, indicating that it should retry the invocation
+on a new object reference. The standard allows ServantManagers to
+trigger <span style="font-family:monospace">LOCATION_FORWARD</span>s by raising the
+<span style="font-family:monospace">PortableServer::ForwardRequest</span> exception, but it does not
+provide a similar mechanism for normal servants. omniORB provides the
+<span style="font-family:monospace">omniORB::LOCATION_FORWARD</span> exception for this purpose. It
+can be thrown by any operation implementation.</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">namespace</span></span><span style="font-size:small"> </span><span style="font-size:small">omniORB</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">LOCATION_FORWARD</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">LOCATION_FORWARD</span><span style="font-size:small">(</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Object_ptr</span><span style="font-size:small"> </span><span style="font-size:small">objref</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>The exception object consumes the object reference it is
+passed.</p>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note9" href="#text9">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">This is different from omniORB 4.0 and earlier,
+where it was the <span style="font-family:monospace">TRANSIENT</span> exception that was propagated to
+the application.</div></dd></dl>
+<hr>
+<a href="omniORB003.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB005.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

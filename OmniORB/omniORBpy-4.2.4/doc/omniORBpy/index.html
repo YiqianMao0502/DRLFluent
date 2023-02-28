@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<title>omniORBpy</title>
+<link rel="stylesheet" type="text/css" href="omniORBpy.css">
+</head>
+<body >
+<!--HEVEA command line is: hevea omniORBpy.tex -->
+<!--HACHA command line is: hacha omniORBpy.html -->
+<div class="center"><p> <span style="font-size:xx-large"><span style="font-size:150%">The omniORBpy version 4.2<br>
+User&#X2019;s Guide
+</span></span></p><p> <span style="font-size:x-large">Duncan Grisby<br>
+</span><span style="font-size:medium">(</span><a href="mailto:dgrisby@apasphere.com"><span style="font-size:medium"><span style="font-style:italic"><span style="font-family:sans-serif">dgrisby@apasphere.com</span></span></span></a><span style="font-size:medium">)</span><span style="font-size:x-large"><br>
+</span></p></div><p><span style="font-size:x-large"><span style="font-weight:bold">Contents</span></span></p>
+<ul>
+<li><a href="omniORBpy001.html">Introduction</a>
+<ul>
+<li><a href="omniORBpy001.html#sec2">Features</a>
+</li><li><a href="omniORBpy001.html#sec6">Setting up your environment</a>
+</li></ul>
+</li><li><a href="omniORBpy002.html">The Basics</a>
+<ul>
+<li><a href="omniORBpy002.html#sec10">The Echo example</a>
+</li><li><a href="omniORBpy002.html#sec11">Generating the Python stubs</a>
+</li><li><a href="omniORBpy002.html#sec12">Object References and Servants</a>
+</li><li><a href="omniORBpy002.html#sec13">Example 1 &#X2014; Colocated client and servant</a>
+</li><li><a href="omniORBpy002.html#sec22">Example 2 &#X2014; Different Address Spaces</a>
+</li><li><a href="omniORBpy002.html#sec27">Example 3 &#X2014; Using the Naming Service</a>
+</li><li><a href="omniORBpy002.html#sec32">Global IDL definitions</a>
+</li></ul>
+</li><li><a href="omniORBpy003.html">Python language mapping issues</a>
+<ul>
+<li><a href="omniORBpy003.html#sec34">Narrowing object references</a>
+</li><li><a href="omniORBpy003.html#sec36">Support for Any values</a>
+</li><li><a href="omniORBpy003.html#sec38">Interface Repository stubs</a>
+</li><li><a href="omniORBpy003.html#sec39">IDL attributes</a>
+</li></ul>
+</li><li><a href="omniORBpy004.html">omniORB configuration and API</a>
+<ul>
+<li><a href="omniORBpy004.html#sec41">Setting parameters</a>
+</li><li><a href="omniORBpy004.html#sec46">Tracing options</a>
+</li><li><a href="omniORBpy004.html#sec48">Miscellaneous global options</a>
+</li><li><a href="omniORBpy004.html#sec49">Client side options</a>
+</li><li><a href="omniORBpy004.html#sec50">Server side options</a>
+</li><li><a href="omniORBpy004.html#sec51">GIOP and interoperability options</a>
+</li><li><a href="omniORBpy004.html#sec52">System Exception Handlers</a>
+</li><li><a href="omniORBpy004.html#sec57">Location forwarding</a>
+</li><li><a href="omniORBpy004.html#sec58">Dynamic importing of IDL</a>
+</li><li><a href="omniORBpy004.html#sec59">C++ API</a>
+</li></ul>
+</li><li><a href="omniORBpy005.html">The IDL compiler</a>
+<ul>
+<li><a href="omniORBpy005.html#sec61">Common options</a>
+</li><li><a href="omniORBpy005.html#sec66">Python back-end options</a>
+</li><li><a href="omniORBpy005.html#sec70">Examples</a>
+</li></ul>
+</li><li><a href="omniORBpy006.html">Connection and Thread Management</a>
+<ul>
+<li><a href="omniORBpy006.html#sec72">Background</a>
+</li><li><a href="omniORBpy006.html#sec73">The model</a>
+</li><li><a href="omniORBpy006.html#sec74">Client side behaviour</a>
+</li><li><a href="omniORBpy006.html#sec78">Server side behaviour</a>
+</li><li><a href="omniORBpy006.html#sec82">Idle connection shutdown</a>
+</li><li><a href="omniORBpy006.html#sec84">Transports and endpoints</a>
+</li><li><a href="omniORBpy006.html#sec89">Connection selection and acceptance</a>
+</li><li><a href="omniORBpy006.html#sec92">Bidirectional GIOP</a>
+</li><li><a href="omniORBpy006.html#sec93">TLS / SSL transport</a>
+</li><li><a href="omniORBpy006.html#sec95">ZIOP</a>
+</li><li><a href="omniORBpy006.html#sec97">Connection Management Extension</a>
+</li></ul>
+</li><li><a href="omniORBpy007.html">Interoperable Naming Service</a>
+<ul>
+<li><a href="omniORBpy007.html#sec102">Object URIs</a>
+</li><li><a href="omniORBpy007.html#sec105">Configuring resolve_initial_references</a>
+</li><li><a href="omniORBpy007.html#sec108">omniNames</a>
+</li><li><a href="omniORBpy007.html#sec111">omniMapper</a>
+</li><li><a href="omniORBpy007.html#sec112">Creating objects with simple object keys</a>
+</li></ul>
+</li><li><a href="omniORBpy008.html">Code set conversion</a>
+<ul>
+<li><a href="omniORBpy008.html#sec114">Native code set</a>
+</li><li><a href="omniORBpy008.html#sec115">Default code sets</a>
+</li><li><a href="omniORBpy008.html#sec116">Code set library</a>
+</li><li><a href="omniORBpy008.html#sec117">Implementing new code sets</a>
+</li></ul>
+</li><li><a href="omniORBpy009.html">Interceptors</a>
+<ul>
+<li><a href="omniORBpy009.html#sec119">Request interceptors</a>
+</li><li><a href="omniORBpy009.html#sec120">Thread interceptors</a>
+</li></ul>
+</li><li><a href="omniORBpy010.html">Objects by value</a>
+<ul>
+<li><a href="omniORBpy010.html#sec122">Features</a>
+</li><li><a href="omniORBpy010.html#sec123">Value sharing and local calls</a>
+</li><li><a href="omniORBpy010.html#sec124">Value factories</a>
+</li><li><a href="omniORBpy010.html#sec125">Standard value boxes</a>
+</li><li><a href="omniORBpy010.html#sec126">Values inside Anys</a>
+</li></ul>
+</li><li><a href="omniORBpy011.html">Asynchronous Method Invocation</a>
+<ul>
+<li><a href="omniORBpy011.html#sec128">Implied IDL</a>
+</li><li><a href="omniORBpy011.html#sec129">Generating AMI stubs</a>
+</li><li><a href="omniORBpy011.html#sec130">AMI examples</a>
+</li></ul>
+</li><li><a href="omniORBpy012.html">Resources</a>
+</li><li><a href="omniORBpy013.html">References</a>
+</li></ul>
+<!--FOOTER-->
+<hr style="height:2"><blockquote class="quote"><em>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
+</em><a href="http://hevea.inria.fr/index.html"><em>H</em><em><span style="font-size:small"><sup>E</sup></span></em><em>V</em><em><span style="font-size:small"><sup>E</sup></span></em><em>A</em></a><em>.</em></blockquote></body>
+</html>

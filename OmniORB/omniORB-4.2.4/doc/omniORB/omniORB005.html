@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>The IDL compiler</title>
+</head>
+<body >
+<a href="omniORB004.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB006.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec74" class="chapter">Chapter&#XA0;5&#XA0;&#XA0;The IDL compiler</h1>
+<p>
+<a id="chap:omniidl"></a></p><p>omniORB&#X2019;s IDL compiler is called omniidl. It consists of a generic
+front-end parser written in C++, and a number of back-ends written in
+Python. omniidl is very strict about IDL validity, so you may find
+that it reports errors in IDL which compiles fine with other IDL
+compilers.</p><p>The general form of an omniidl command line is:</p><blockquote class="quote"> <span style="font-family:monospace">omniidl </span>[<span style="font-style:italic">options</span>]<span style="font-family:monospace"> -b</span>&lt;<span style="font-style:italic">back-end</span>&gt;<span style="font-family:monospace"> </span>[<span style="font-style:italic">back-end options</span>]<span style="font-family:monospace"> </span>&lt;<span style="font-style:italic">file</span>&gt;
+</blockquote>
+<h2 id="sec75" class="section">5.1&#XA0;&#XA0;Common options</h2>
+<p>The following options are common to all back-ends:</p><table style="border:0;border-spacing:0" class="cellpadding0"><tr><td style="text-align:left;white-space:nowrap" ></td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-b</span><span style="font-style:italic">back-end</span>
+</td><td style="text-align:left;white-space:nowrap" >Run the specified back-end. For the C++ ORB, use <span style="font-family:monospace">-bcxx</span>.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-D</span><span style="font-style:italic">name</span>[<span style="font-family:monospace">=</span><span style="font-style:italic">value</span>]
+</td><td style="text-align:left;white-space:nowrap" >Define <span style="font-style:italic">name</span> for the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-U</span><span style="font-style:italic">name</span>
+</td><td style="text-align:left;white-space:nowrap" >Undefine <span style="font-style:italic">name</span> for the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-I</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Include <span style="font-style:italic">dir</span> in the preprocessor search path.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-E</span>
+</td><td style="text-align:left;white-space:nowrap" >Only run the preprocessor, sending its output to stdout.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Y</span><span style="font-style:italic">cmd</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">cmd</span> as the preprocessor, rather than the normal C
+preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-N</span>
+</td><td style="text-align:left;white-space:nowrap" >Do not run the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-T</span>
+</td><td style="text-align:left;white-space:nowrap" >Use a temporary file, not a pipe, for preprocessor output.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wp</span><span style="font-style:italic">arg</span>[,<span style="font-style:italic">arg</span>&#X2026;]
+</td><td style="text-align:left;white-space:nowrap" >Send arguments to the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wb</span><span style="font-style:italic">arg</span>[,<span style="font-style:italic">arg</span>&#X2026;]
+</td><td style="text-align:left;white-space:nowrap" >Send arguments to the back-end.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-nf</span>
+</td><td style="text-align:left;white-space:nowrap" >Do not warn about unresolved forward declarations.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-k</span>
+</td><td style="text-align:left;white-space:nowrap" >Keep comments after declarations, to be used by some back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-K</span>
+</td><td style="text-align:left;white-space:nowrap" >Keep comments before declarations, to be used by some back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-C</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Change directory to <span style="font-style:italic">dir</span> before writing output files.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-d</span>
+</td><td style="text-align:left;white-space:nowrap" >Dump the parsed IDL then exit, without running a back-end.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-p</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">dir</span> as a path to find omniidl back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-V</span>
+</td><td style="text-align:left;white-space:nowrap" >Print version information then exit.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-u</span>
+</td><td style="text-align:left;white-space:nowrap" >Print usage information.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-v</span>
+</td><td style="text-align:left;white-space:nowrap" >Verbose: trace compilation stages.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+</td></tr>
+</table><p>Most of these options are self explanatory, but some are not
+so obvious.</p>
+<h3 id="sec76" class="subsection">5.1.1&#XA0;&#XA0;Preprocessor interactions</h3>
+<p>IDL is processed by the C preprocessor before omniidl parses it.
+omniidl always uses the GNU C preprocessor (which it builds with the
+name omnicpp). The <span style="font-family:monospace">-D</span>, <span style="font-family:monospace">-U</span>, and <span style="font-family:monospace">-I</span>
+options are just sent to the preprocessor. Note that the current
+directory is not on the include search path by default&#X2014;use
+&#X2018;<span style="font-family:monospace">-I.</span>&#X2019; for that. The <span style="font-family:monospace">-Y</span> option can be used to
+specify a different preprocessor to omnicpp. Beware that line
+directives inserted by other preprocessors are likely to confuse
+omniidl.</p>
+<h4 id="sec77" class="subsubsection">5.1.1.1&#XA0;&#XA0;Ancient history: Windows 9x</h4>
+<p>The output from the C preprocessor is normally fed to the omniidl
+parser through a pipe. On some Windows 98 machines (but not all!) the
+pipe does not work, and the preprocessor output is echoed to the
+screen. When this happens, the omniidl parser sees an empty file, and
+produces useless stub files with strange long names. To avoid the
+problem, use the &#X2018;<span style="font-family:monospace">-T</span>&#X2019; option to create a temporary file
+between the two stages.</p>
+<h3 id="sec78" class="subsection">5.1.2&#XA0;&#XA0;Forward-declared interfaces</h3>
+<p>If you have an IDL file like:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">J</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> </span><span style="font-size:small">the_I</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>then omniidl will normally issue a warning:</p><pre class="verbatim"><span style="font-size:small">  test.idl:1: Warning: Forward declared interface `I' was never
+  fully defined
+</span></pre><p>It is illegal to declare such IDL in isolation, but it
+<em>is</em> valid to define interface <span style="font-family:monospace">I</span> in a separate file. If
+you have a lot of IDL with this sort of construct, you will drown
+under the warning messages. Use the <span style="font-family:monospace">-nf</span> option to suppress
+them.</p>
+<h3 id="sec79" class="subsection">5.1.3&#XA0;&#XA0;Comments</h3>
+<p>By default, omniidl discards comments in the input IDL. However, with
+the <span style="font-family:monospace">-k</span> and <span style="font-family:monospace">-K</span> options, it preserves the comments
+for use by the back-ends. The C++ back-end ignores this information,
+but it is relatively easy to write new back-ends which <em>do</em> make
+use of comments.</p><p>The two different options relate to how comments are attached to
+declarations within the IDL. Given IDL like:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// A comment</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op2</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>the <span style="font-family:monospace">-k</span> flag will attach the comment to <span style="font-family:monospace">op1()</span>;
+the <span style="font-family:monospace">-K</span> flag will attach it to <span style="font-family:monospace">op2()</span>.</p>
+<h2 id="sec80" class="section">5.2&#XA0;&#XA0;C++ back-end options</h2>
+<p>
+<a id="sec:cxx_backend"></a></p><p>When you specify the C++ back-end (with <span style="font-family:monospace">-bcxx</span>), the
+following <span style="font-family:monospace">-Wb</span> options are available. Note that the
+<span style="font-family:monospace">-Wb</span> options must be specified <em>after</em> the
+<span style="font-family:monospace">-bcxx</span> option, so omniidl knows which back-end to give the
+arguments to.</p><table style="border:0;border-spacing:0" class="cellpadding0"><tr><td style="text-align:left;white-space:nowrap" ></td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbh=</span><span style="font-style:italic">suffix</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">suffix</span> for generated header files. Default
+&#X2018;<span style="font-family:monospace">.hh</span>&#X2019;.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbs=</span><span style="font-style:italic">suffix</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">suffix</span> for generated stub files. Default
+&#X2018;<span style="font-family:monospace">SK.cc</span>.&#X2019;</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbd=</span><span style="font-style:italic">suffix</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">suffix</span> for generated dynamic files. Default
+&#X2018;<span style="font-family:monospace">DynSK.cc</span>.&#X2019;</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wba</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate stubs for TypeCode and Any.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbtp</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate &#X2018;tie&#X2019; implementation skeletons.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbtf</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate flattened &#X2018;tie&#X2019; implementation skeletons.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbami</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate AMI types and operations.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbexample</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate example implementation code.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbinline</span>
+</td><td style="text-align:left;white-space:nowrap" >Output stubs for <span style="font-family:monospace">#include</span>d IDL files in line with the
+main file.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbuse-quotes</span>
+</td><td style="text-align:left;white-space:nowrap" >Use quotes in &#X2018;<span style="font-family:monospace">#include</span>&#X2019; directives 
+(e.g. <span style="font-family:monospace">"foo"</span> rather than <span style="font-family:monospace">&lt;foo&gt;</span>.)</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbkeep-inc-path</span>
+</td><td style="text-align:left;white-space:nowrap" >Preserve IDL &#X2018;<span style="font-family:monospace">#include</span>&#X2019; paths in generated
+	&#X2018;<span style="font-family:monospace">#include</span>&#X2019; directives.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbvirtual-objref</span>
+</td><td style="text-align:left;white-space:nowrap" >Use virtual functions for object reference operations.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbimpl-mapping</span>
+</td><td style="text-align:left;white-space:nowrap" >Use the &#X2018;implementation&#X2019; mapping for object reference methods.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbsplice-modules</span>
+</td><td style="text-align:left;white-space:nowrap" >Splice together multiply-opened modules into one.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-WbBOA</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate BOA compatible skeletons.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbold</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate old CORBA 2.1 signatures for skeletons.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbold-prefix</span>
+</td><td style="text-align:left;white-space:nowrap" >Map C++ reserved words with prefix &#X2018;<span style="font-family:monospace">_</span>&#X2019; rather than
+&#X2018;<span style="font-family:monospace">_cxx_</span>&#X2019;.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-WbF</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate code fragments (only for use during omniORB build).</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+</td></tr>
+</table>
+<h3 id="sec81" class="subsection">5.2.1&#XA0;&#XA0;Optional code generation options</h3>
+<p>By default, omniidl generates the minimum code required to provide all
+the IDL-defined types and interfaces, which is sufficient for the
+majority of applications. Additional code can also be generated, for
+various purposes:</p>
+<h4 id="sec82" class="subsubsection">5.2.1.1&#XA0;&#XA0;Any and TypeCode</h4>
+<p>To generate TypeCodes and Any insertion operators, give the
+<span style="font-family:monospace">-Wba</span> option. See chapter&#XA0;<a href="omniORB010.html#chap%3Aany">10</a> for details.</p><p>By default, omniidl separates the normal stub and skeleton file (the
+<span style="font-family:monospace">SK.cc</span> file) from these &#X2018;dynamic&#X2019; stubs (the <span style="font-family:monospace">DynSK.cc</span>
+file), so applications that do not need support for Any and TypeCode
+for a particular IDL file do not waste space with unnecessary
+definitions. It is possible to output both the normal stubs and the
+dynamic stubs to a single file, by simply specifying the same
+extension for both files. This command places both the normal stubs
+and the dynamic stubs in <span style="font-family:monospace">aSK.cc</span>:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bcxx -Wba -Wbd=SK.cc a.idl</span>
+</blockquote>
+<h4 id="sec83" class="subsubsection">5.2.1.2&#XA0;&#XA0;Tie templates</h4>
+<p>As described in section&#XA0;<a href="omniORB002.html#sec%3Atie">2.11</a>, tie templates can be used to
+provide servant implementations, instead of using inheritance from the
+normal skeleton classes. To generate tie templates, give the
+<span style="font-family:monospace">-Wbtp</span> option to omniidl.</p><p>When using a pre-namespace C++ compiler, IDL modules are mapped to C++
+classes, which causes a problem with tie templates. The C++ mapping
+says that for the interface <span style="font-family:monospace">M::I</span>, the C++ tie template class
+should be named <span style="font-family:monospace">POA_M::I_tie</span>. However, since template classes
+cannot be declared inside other classes, this naming scheme cannot be
+used if <span style="font-family:monospace">POA_M</span> is a class.</p><p>The C++ mapping has an alternative option of &#X2018;flattened&#X2019; tie class
+names, in which the template class is declared at global scope with
+the name <span style="font-family:monospace">POA_M_I_tie</span>. i.e. all occurrences of &#X2018;<span style="font-family:monospace">::</span>&#X2019;
+are replaced by &#X2018;<span style="font-family:monospace">_</span>&#X2019;. Generate the flattened ties using the
+<span style="font-family:monospace">-Wbtf</span> command line argument.</p>
+<h4 id="sec84" class="subsubsection">5.2.1.3&#XA0;&#XA0;Asynchronous Method Invocation</h4>
+<p>Generate asynchronous invocation operations and the various types
+required by AMI by specifying <span style="font-family:monospace">-Wbami</span>. See
+chapter&#XA0;<a href="omniORB012.html#chap%3Aami">12</a> for details.</p>
+<h4 id="sec85" class="subsubsection">5.2.1.4&#XA0;&#XA0;Example implementations</h4>
+<p>If you use the <span style="font-family:monospace">-Wbexample</span> flag, omniidl will generate an
+example implementation file as well as the stubs and skeletons. For
+IDL file <span style="font-family:monospace">foo.idl</span>, the example code is written to
+<span style="font-family:monospace">foo_i.cc</span>. The example file contains class and method
+declarations for the operations of all interfaces in the IDL file,
+along with a <span style="font-family:monospace">main()</span> function which creates an instance of each
+object. You still have to fill in the operation implementations, of
+course.</p>
+<h3 id="sec86" class="subsection">5.2.2&#XA0;&#XA0;Include file options</h3>
+<p>IDL files regularly <span style="font-family:monospace">#include</span> other files. By default, if file
+<span style="font-family:monospace">a.idl</span> says <span style="font-family:monospace">#include &lt;b/c.idl&gt;</span> then the generated
+header <span style="font-family:monospace">a.hh</span> has an include of the form <span style="font-family:monospace">#include
+&lt;c.idl&gt;</span>, and <span style="font-family:monospace">aSK.cc</span> and <span style="font-family:monospace">aDynSK.cc</span> contain only code
+corresponding to the declarations in <span style="font-family:monospace">a.idl</span>.</p><p>If the <span style="font-family:monospace">-Wbinline</span> option is provided, all the
+<span style="font-family:monospace">#include</span>d declarations are generated in <span style="font-family:monospace">a.hh</span>,
+<span style="font-family:monospace">aSK.cc</span> and <span style="font-family:monospace">aDynSK.cc</span>, meaning the application code
+should only use that single set of files.</p><p>If <span style="font-family:monospace">-Wbuse-quotes</span> is specified, then the directive in
+<span style="font-family:monospace">a.hh</span> uses quotes rather than angle brackets:
+<span style="font-family:monospace">#include "c.idl"</span>.</p><p>Normally any path details contained in the IDL <span style="font-family:monospace">#include</span>
+directive are removed, leaving just the base name. If
+<span style="font-family:monospace">-Wbkeep-inc-path</span> is specified, the directive in
+<span style="font-family:monospace">a.hh</span> is <span style="font-family:monospace">#include &lt;b/c.idl&gt;</span>.</p>
+<h3 id="sec87" class="subsection">5.2.3&#XA0;&#XA0;Object reference operations</h3>
+<p>Some of the C++ mapping&#X2019;s parameter passing rules are problematic in
+terms of memory management. For example, if an IDL operation has a
+parameter of type <span style="font-family:monospace">inout string</span>, the standard mapping has a C++
+parameter of type <span style="font-family:monospace">char*&amp;</span>. If application code passes a
+<span style="font-family:monospace">String_var</span> for the parameter, some C++ compilers choose the
+wrong conversion operator and cause a violation of the memory
+management rules<sup><a id="text10" href="#note10">1</a></sup>.</p><p>To avoid this, omniORB uses some helper classes as the parameter types
+in object reference operations, meaning that the correct memory
+management rules are always followed. Normally, that is invisible to
+application code, but occasionally it becomes problematic. One example
+is that if a <span style="font-family:monospace">local interface</span> is derived from a normal
+unconstrained interface, the C++ mapping of the local interface
+derives from the object reference class, and so the base object
+reference class must use the standard mapping rather than omniORB&#X2019;s
+usual enhanced mapping. To choose the standard &#X2018;implementation
+mapping&#X2019;, give the <span style="font-family:monospace">-Wbimpl-mapping</span> option to omniidl.</p><p>Similarly, omniidl usually uses non-virtual methods in its object
+reference classes, since there is no usual need to override them. The
+local interface situation also requires method overrides, so omniidl
+must be instructed to generate object references as virtual. Use
+<span style="font-family:monospace">-Wbvirtual-objref</span> to achieve this.</p><p>More details about the local interface mapping can be found in
+section&#XA0;<a href="omniORB011.html#sec%3ALocalInterfaces">11.8</a>.</p>
+<h3 id="sec88" class="subsection">5.2.4&#XA0;&#XA0;Module splicing</h3>
+<p>On ancient C++ compilers without namespace support, IDL modules map to
+C++ classes, and so cannot be reopened. For some IDL, it is possible
+to &#X2018;splice&#X2019; reopened modules on to the first occurrence of the module,
+so all module definitions are in a single class. It is possible in
+this sort of situation:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {};</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M2</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">J</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small">::</span><span style="font-size:small">I</span><span style="font-size:small"> </span><span style="font-size:small">ok</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">K</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> </span><span style="font-size:small">still_ok</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>but not if there are cross-module dependencies:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {};</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M2</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">J</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small">::</span><span style="font-size:small">I</span><span style="font-size:small"> </span><span style="font-size:small">ok</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">M1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">K</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">M2</span><span style="font-size:small">::</span><span style="font-size:small">J</span><span style="font-size:small"> </span><span style="font-size:small">oh_dear</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>In both of these cases, the <span style="font-family:monospace">-Wbsplice-modules</span>
+option causes omniidl to put all of the definitions for module
+<span style="font-family:monospace">M1</span> into a single C++ class. For the first case, this will work
+fine. For the second case, class <span style="font-family:monospace">M1::K</span> will contain a reference
+to <span style="font-family:monospace">M2::J</span>, which has not yet been defined; the C++ compiler will
+complain.</p>
+<h2 id="sec89" class="section">5.3&#XA0;&#XA0;Examples</h2>
+<p>Generate the C++ headers and stubs for a file <span style="font-family:monospace">a.idl</span>:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bcxx a.idl</span>
+</blockquote><p>Generate with Any support:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bcxx -Wba a.idl</span>
+</blockquote><p>As above, but also generate Python stubs (assuming omniORBpy
+is installed):</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bcxx -Wba -bpython a.idl</span>
+</blockquote><p>Just check the IDL files for validity, generating no output:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl a.idl b.idl</span>
+</blockquote>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note10" href="#text10">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">For this reason, the <span style="font-family:monospace">_var</span> types
+define an <span style="font-family:monospace">inout()</span> method that ensures use of the correct
+conversion and thus avoids this kind of trouble.</div></dd></dl>
+<hr>
+<a href="omniORB004.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB006.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

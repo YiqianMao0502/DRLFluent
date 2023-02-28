@@ -1,0 +1,9 @@
+#!/bin/bash --login
+#$ -cwd              # Job will run in the current directory (where you ran qsub)
+                     # Nothing specified to request more cores = default 1 core
+
+# Load any required modulefiles
+module load apps/binapps/fluent/19.5
+
+# Now the commands to be run by the job
+fluent 2d -g -i testc.jou -aas

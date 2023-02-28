@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORBpy.css">
+<title>Interceptors</title>
+</head>
+<body >
+<a href="omniORBpy008.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy010.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec118" class="chapter">Chapter&#XA0;9&#XA0;&#XA0;Interceptors</h1>
+<p>
+<a id="chap:interceptors"></a></p><p>omniORBpy has limited interceptor support. Interceptors permit the
+application to insert processing at various points along the call
+chain, as requests are processed. The Portable Interceptors API is not
+supported.</p>
+<h2 id="sec119" class="section">9.1&#XA0;&#XA0;Request interceptors</h2>
+<p>Interceptors for incoming and outgoing requests are registered using
+functions in the <span style="font-family:monospace">omniORB.interceptors</span> module:</p><div class="lstlisting"><span style="font-size:small">  </span><span style="font-size:small">addClientSendRequest</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">addClientReceiveReply</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">addServerReceiveRequest</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">addServerSendReply</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">addServerSendException</span><span style="font-size:small">()</span></div><p>To register an interceptor function, call the relevant registration
+function with a callable argument. The callable will be called with
+two or three arguments. The first argument is a string containing the
+name of the operation being invoked; the second is the collection of
+service contexts to be retrieved or filled in.
+<span style="font-family:monospace">ServerSendException</span> has a third argument, the repository id of
+the exception being thrown.</p><p>When receiving service contexts (in the <span style="font-family:monospace">ClientReceiveReply</span> and
+<span style="font-family:monospace">ServerReceiveRequest</span> interceptors), the second argument
+is a tuple of 2-tuples. In each 2-tuple, the first item is the service
+context id and the second item is the CDR encapsulation of the service
+context. The encapsulation can be decoded with
+<span style="font-family:monospace">omniORB.cdrUnmarshal()</span> (but only if you know the type to decode it
+to).</p><p>When sending service contexts (<span style="font-family:monospace">ClientSendRequest</span>,
+<span style="font-family:monospace">ServerSendReply</span>, and <span style="font-family:monospace">ServerSendException</span>), the second
+argument is an empty list. The interceptor function can choose to add
+one or more service context tuples, with the same form described
+above, by appending to the list. Encapsulations are created with
+<span style="font-family:monospace">omniORB.cdrMarshal()</span>.</p><p>Interceptor registration functions may only be called before the ORB
+is initialised. Attempting to call them later results in a
+<span style="font-family:monospace">BAD_INV_ORDER</span> exception.</p>
+<h2 id="sec120" class="section">9.2&#XA0;&#XA0;Thread interceptors</h2>
+<p>Thread interceptors are registered using functions in the
+<span style="font-family:monospace">omniORB.interceptors</span> module:</p><div class="lstlisting"><span style="font-size:small">  </span><span style="font-size:small">addAssignUpcallThread</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">addAssignAMIThread</span></div><p>To register thread interceptors, call the relevant registration
+function with a callable argument. The callable can be a simple
+function that returns None, or a generator that yields once. When a
+thread is assigned to perform server upcalls or AMI calls, the
+corresponding function is called. If it is a simple function, the
+function is called when the thread is assigned. If it is a generator,
+it is called when the thread is assigned, yields to permit the thread
+to execute, and then resumes when the thread is unassigned. For
+example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">def</span></span><span style="font-size:small"> </span><span style="font-size:small">upcallInterceptor</span><span style="font-size:small">():</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">print</span></span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-size:small">"This thread is about to be used to call into server code"</span></span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">yield</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">print</span></span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-size:small">"The thread has finished"</span></span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">omniORB</span><span style="font-size:small">.</span><span style="font-size:small">interceptors</span><span style="font-size:small">.</span><span style="font-size:small">addAssignUpcallThread</span><span style="font-size:small">(</span><span style="font-size:small">upcallInterceptor</span><span style="font-size:small">)</span></div>
+<hr>
+<a href="omniORBpy008.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy010.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Packaging stubs into DLLs</title>
+</head>
+<body >
+<a href="omniORB013.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB015.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec179" class="chapter">Chapter&#XA0;14&#XA0;&#XA0;Packaging stubs into DLLs</h1>
+<p>
+<a id="chap:dlls"></a></p><p>omniORB&#X2019;s stubs can be packaged into shared libraries or DLLs. On Unix
+platforms this is mostly painless, but on Windows things are slightly
+more tricky.</p>
+<h2 id="sec180" class="section">14.1&#XA0;&#XA0;Dynamic loading and unloading</h2>
+<p>As long as your platform supports running static initialisers and
+destructors as libraries are loaded and unloaded, you can package
+stubs into shared libraries / DLLs, and load them dynamically at
+runtime.</p><p>There is one minor problem with this, which is that normally nil
+object references are heap allocated, and only deallocated when the
+ORB is destroyed. That means that if you unload a stub library from
+which nil references have been obtained (just by creating an object
+reference _var for example), there is a risk of a segmentation fault
+when the ORB is destroyed. To avoid that problem, define the
+<span style="font-family:monospace">OMNI_UNLOADABLE_STUBS</span> C pre-processor symbol while you are
+compiling the stub files. Unfortunately, with that define set, there
+is a risk that object reference _vars at global scope will segfault
+as they are unloaded. You must not create _vars at global scope if
+you are using <span style="font-family:monospace">OMNI_UNLOADABLE_STUBS</span>.</p>
+<h2 id="sec181" class="section">14.2&#XA0;&#XA0;Windows DLLs</h2>
+<p>On Unix platforms, the linker figures out how to link the symbols
+exported by a library in to the running program. On Windows,
+unfortunately, you have to tell the linker where symbols are coming
+from. This causes all manner of difficulties.</p>
+<h3 id="sec182" class="subsection">14.2.1&#XA0;&#XA0;Exporting symbols</h3>
+<p>To (statically) link with a DLL file in Windows, you link with a LIB
+file which references the symbols exported from the DLL. To build the
+LIB and DLL files, the correct symbols must be exported. One way to do
+that is to decorate the source code with magic tags that tell the
+compiler to export the symbols. The alternative is to provide a DEF
+file that lists all the symbols to be exported. omniORB uses a DEF
+file.</p><p>The question is, how do you create the DEF file? The answer is to use
+a Python script named <span style="font-family:monospace">makedeffile.py</span> that lives in the
+<span style="font-family:monospace">bin\scripts</span> directory in the omniORB distribution.
+<span style="font-family:monospace">makedeffile.py</span> runs the dumpbin program that comes with
+Visual C++, and processes its output to extract the necessary symbols.
+Although it is designed for exporting the symbols from omniORB stub
+files, it can actually be used for arbitrary C++ code. To use it to
+create a DLL from a single source file, use the following steps:</p><ol class="enumerate" type=1><li class="li-enumerate">
+Compile the source:<p><span style="font-family:monospace">cl -c -O2 -MD -GX -Fofoo.o -Tpfoo.cc</span></p></li><li class="li-enumerate">Build a static library (It probably won&#X2019;t work on its own due to
+the -MD switch to cl, but we just need it to get the symbols
+out):<p><span style="font-family:monospace">lib -out:foo_static.lib foo.o</span></p></li><li class="li-enumerate">Use the script to build a .def file:<p><span style="font-family:monospace">makedeffile.py foo_static.lib foo 1.0 foo.def</span></p></li><li class="li-enumerate">Build the .dll and .lib with the def file.<p><span style="font-family:monospace">link -out:foo.dll -dll -def:foo.def -implib:foo.lib foo.o</span>
+</p></li></ol><p>Of course, you can link together many separate C++ files, rather than
+just the one shown here.</p>
+<h3 id="sec183" class="subsection">14.2.2&#XA0;&#XA0;Importing constant symbols</h3>
+<p>As if exporting the symbols from a DLL was not complicated enough, any
+constant values exported by a DLL have to be explicitly
+<em>imported</em> into the code using them. omniORB&#X2019;s stub files declare
+a number of such constants. This time, the constant declarations in
+the generated header files are decorated in a way that tells the
+compiler what to do. When the stub headers are #included, the correct
+pre-processor defines must be set. If things are not set correctly,
+the code all links without problems, but then mysteriously blows up at
+run time.</p><p>Depending on how complex your situation is, there are a range of
+solutions. Starting with the simplest, here are some scenarios you may
+find yourself in:</p><ol class="enumerate" type=1><li class="li-enumerate">All stub code, and all code that uses it is wrapped up in a
+single DLL.<p>Do nothing special.</p></li><li class="li-enumerate">All stub code is in a single DLL. Code using it is in another
+DLL, or not in a DLL at all.<p><span style="font-family:monospace">#define USE_stub_in_nt_dll</span> before <span style="font-family:monospace">#include</span> of
+the stub headers.</p></li><li class="li-enumerate">The stubs for each IDL file are in separate DLLs, one DLL per
+IDL file.<p>In this case, if the IDL files <span style="font-family:monospace">#include</span> each other, then
+when the stub files are compiled, import declarations are needed
+so that references between the separate DLLs work. To do this,
+first compile the IDL files with the <span style="font-family:monospace">-Wbdll_stubs</span>
+flag:</p><p><span style="font-family:monospace">omniidl -bcxx -Wbdll_stubs example.idl</span></p><p>Then define the <span style="font-family:monospace">INCLUDED_stub_in_nt_dll</span> pre-processor
+symbol when compiling the stub files. As above, define
+<span style="font-family:monospace">USE_stub_in_nt_dll</span> when including the stub headers
+into application code.</p></li><li class="li-enumerate">Stubs and application code are packaged into multiple DLLs, but
+DLLs contain the stubs for more than one IDL file.<p>This situation is handled by &#X2018;annotating&#X2019; the IDL files to
+indicate which DLLs they will be compiled into. The annotation
+takes the form of some <span style="font-family:monospace">#ifdefs</span> to be inserted in the
+stub headers. For example,</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// one.idl</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #</span><span style="font-size:small">ifndef</span><span style="font-size:small"> </span><span style="font-size:small">COMPILING_FIRST_DLL</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> # </span><span style="font-size:small">ifndef</span><span style="font-size:small"> </span><span style="font-size:small">USE_stub_in_nt_dll</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #   </span><span style="font-size:small">define</span><span style="font-size:small"> </span><span style="font-size:small">USE_stub_in_nt_dll</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> # </span><span style="font-size:small">endif</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #</span><span style="font-size:small">endif</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#include</span></span><span style="font-size:small"> &lt;</span><span style="font-size:small">two</span><span style="font-size:small">.</span><span style="font-size:small">idl</span><span style="font-size:small">&gt;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ModuleOne</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  ...</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// two.idl</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #</span><span style="font-size:small">ifndef</span><span style="font-size:small"> </span><span style="font-size:small">COMPILING_SECOND_DLL</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> # </span><span style="font-size:small">ifndef</span><span style="font-size:small"> </span><span style="font-size:small">USE_stub_in_nt_dll</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #   </span><span style="font-size:small">define</span><span style="font-size:small"> </span><span style="font-size:small">USE_stub_in_nt_dll</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> # </span><span style="font-size:small">endif</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#pragma</span></span><span style="font-size:small"> </span><span style="font-size:small">hh</span><span style="font-size:small"> #</span><span style="font-size:small">endif</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">#include</span></span><span style="font-size:small"> &lt;</span><span style="font-size:small">three</span><span style="font-size:small">.</span><span style="font-size:small">idl</span><span style="font-size:small">&gt;</span><span style="font-size:small">
+</span><span style="font-size:small">...</span></div><p>Here, <span style="font-family:monospace">one.idl</span> is packaged into <span style="font-family:monospace">first.dll</span> and
+<span style="font-family:monospace">two.idl</span> is in <span style="font-family:monospace">second.dll</span>. When compiling
+<span style="font-family:monospace">first.dll</span>, the <span style="font-family:monospace">COMPILING_FIRST_DLL</span> define is
+set, meaning definitions from <span style="font-family:monospace">one.idl</span> (and any other
+files in that DLL) are not imported. Any other module that
+includes the stub header for <span style="font-family:monospace">one.idl</span> does not define
+<span style="font-family:monospace">COMPILING_FIRST_DLL</span>, and thus imports the necessary
+symbols from the DLL.</p><p>Rather than explicitly listing all the pre-processor code, it
+can be cleaner to use a C++ header file for each DLL. See the
+COS services IDL files in <span style="font-family:monospace">idl/COS</span> for an example.</p></li></ol>
+<hr>
+<a href="omniORB013.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB015.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

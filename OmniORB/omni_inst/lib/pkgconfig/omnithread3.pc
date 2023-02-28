@@ -1,0 +1,11 @@
+prefix=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: omnithread3
+Description: Threading library for omniORB4
+Version: 4.2.4
+Requires:
+Libs: -L${libdir} -lomnithread
+Cflags: -D__x86_64__ -D__linux__ -D__OSVERSION__=2 -I${includedir}

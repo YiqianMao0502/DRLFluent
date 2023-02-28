@@ -1,0 +1,10 @@
+\usepackage[T1]{url}
+\newcommand{\email}{\begingroup \urlstyle{sf}\Url}
+\newcommand{\file}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\envvar}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\makevar}{\begingroup \urlstyle{tt}\Url}
+\newcommand{\corbauri}{\begingroup \urlstyle{tt}\Url}
+\def\weburl{\begingroup%
+\def\UrlLeft##1\UrlRight{\ahrefurl{##1}}%
+\urlstyle{tt}%
+\Url}

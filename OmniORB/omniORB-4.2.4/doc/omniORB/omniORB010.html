@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Type Any and TypeCode</title>
+</head>
+<body >
+<a href="omniORB009.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB011.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec143" class="chapter">Chapter&#XA0;10&#XA0;&#XA0;Type Any and TypeCode</h1>
+<p>
+<a id="chap:any"></a></p><p>The CORBA specification provides for a type that can hold the value of
+any OMG IDL type. This type is known as type <span style="font-family:monospace">Any</span>. The OMG also
+specifies a pseudo-object, <span style="font-family:monospace">TypeCode</span>, that can encode a
+description of any type specifiable in OMG IDL.</p><p>In this chapter, an example demonstrating the use of type Any is
+presented. The example code is in the <span style="font-family:monospace">src/examples/anyExample</span>
+directory in the omniORB distribution. The example is followed by
+sections describing the behaviour of type Any and TypeCode in omniORB.
+For further information on type Any, refer to the C++ Mapping
+specification., and for more information on TypeCode, refer to the
+Interface Repository chapter in the CORBA core section of the CORBA
+specification.</p>
+<h2 id="sec144" class="section">10.1&#XA0;&#XA0;Example using type Any</h2>
+<p>Before going through this example, you should make sure that you have
+read and understood the examples in chapter&#XA0;<a href="omniORB002.html#chap%3Abasic">2</a>.</p>
+<h3 id="sec145" class="subsection">10.1.1&#XA0;&#XA0;Type Any in IDL</h3>
+<p>
+Type Any allows one to delay the decision on the type used in an
+operation until run-time. To use type any in IDL, use the keyword
+<span style="font-family:monospace">any</span>, as in the following example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">anyExample</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">any</span></span><span style="font-size:small"> </span><span style="font-size:small">testOp</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">any</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>The operation <span style="font-family:monospace">testOp()</span> in this example can now take any
+value expressible in OMG IDL as an argument, and can also return any
+type expressible in OMG IDL.</p><p>Type Any is mapped into C++ as the type <span style="font-family:monospace">CORBA::Any</span>. When passed
+as an argument or as a result of an operation, the following rules
+apply:</p><table style="border-spacing:6px;border-collapse:separate;" class="cellpading0"><tr><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-weight:bold">In </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-weight:bold">InOut </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-weight:bold">Out </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-weight:bold">Return </span></span><span style="font-size:small"> </span></td></tr>
+<tr><td class="hbar" colspan=4><span style="font-size:small"></span></td></tr>
+<tr><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-family:monospace">const CORBA::Any&amp; </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-family:monospace">CORBA::Any&amp; </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-family:monospace">CORBA::Any*&amp; </span></span></td><td style="text-align:left;white-space:nowrap" ><span style="font-size:small"><span style="font-family:monospace">CORBA::Any* </span></span><span style="font-size:small">
+</span></td></tr>
+</table><p>So, the above IDL would map to the following C++:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">anyExample_i</span><span style="font-size:small"> : </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small">POA_anyExample</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">anyExample_i</span><span style="font-size:small">() { }</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> ~</span><span style="font-size:small">anyExample_i</span><span style="font-size:small">() { }</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">virtual</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small">* </span><span style="font-size:small">testOp</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small">&amp; </span><span style="font-size:small">a</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div>
+<h3 id="sec146" class="subsection">10.1.2&#XA0;&#XA0;Inserting and Extracting Basic Types from an Any</h3>
+<p>The question now arises as to how values are inserted into and removed
+from an Any. This is achieved using two overloaded operators:
+<span style="font-family:monospace">&lt;&lt;=</span> and <span style="font-family:monospace">&gt;&gt;=</span>.</p><p>To insert a value into an Any, the <span style="font-family:monospace">&lt;&lt;=</span> operator is used, as
+in this example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small"> </span><span style="font-size:small">an_any</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Long</span><span style="font-size:small"> </span><span style="font-size:small">l</span><span style="font-size:small"> = 100;</span><span style="font-size:small">
+</span><span style="font-size:small">an_any</span><span style="font-size:small"> &lt;&lt;= </span><span style="font-size:small">l</span><span style="font-size:small">;</span></div><p>Note that the overloaded <span style="font-family:monospace">&lt;&lt;=</span> operator has a return
+type of <span style="font-family:monospace">void</span>.</p><p>To extract a value, the <span style="font-family:monospace">&gt;&gt;=</span> operator is used, as in this
+example (where the Any contains a long):</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Long</span><span style="font-size:small"> </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">an_any</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"This is a long: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">l</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span></div><p>The overloaded <span style="font-family:monospace">&gt;&gt;=</span> operator returns a <span style="font-family:monospace">CORBA::Boolean</span>.
+If an attempt is made to extract a value from an Any when it contains
+a different type of value (e.g. an attempt to extract a long from an
+Any containing a double), the overloaded <span style="font-family:monospace">&gt;&gt;=</span> operator will
+return <span style="font-family:monospace">false</span>; otherwise it will return <span style="font-family:monospace">true</span>. Thus, a
+common tactic to extract values from an Any is as follows:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Long</span><span style="font-size:small"> </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Double</span><span style="font-size:small"> </span><span style="font-size:small">d</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">char</span></span><span style="font-size:small">* </span><span style="font-size:small">str</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">if</span></span><span style="font-size:small"> (</span><span style="font-size:small">an_any</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">l</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"Long: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">l</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">else</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">if</span></span><span style="font-size:small"> (</span><span style="font-size:small">an_any</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">d</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"Double: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">d</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">else</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">if</span></span><span style="font-size:small"> (</span><span style="font-size:small">an_any</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">str</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"String: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">str</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// The storage of the extracted string is still owned by the any.</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">else</span></span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"Unknown value."</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div>
+<h3 id="sec147" class="subsection">10.1.3&#XA0;&#XA0;Inserting and Extracting Constructed Types from an Any</h3>
+<p>It is also possible to insert and extract constructed types and object
+references from an Any. omniidl will generate insertion and extraction
+operators for the constructed type. Note that it is necessary to
+specify the <span style="font-family:monospace">-Wba</span> command-line flag when running omniidl in
+order to generate these operators. The following example illustrates
+the use of constructed types with type Any:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">testStruct</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small"> </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">short</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">anyExample</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">any</span></span><span style="font-size:small"> </span><span style="font-size:small">testOp</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">any</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Upon compiling the above IDL with <span style="font-family:monospace">omniidl -bcxx -Wba</span>, the
+following overloaded operators are generated:</p><ol class="enumerate" type=1><li class="li-enumerate">
+<code>void operator&lt;&lt;=(CORBA::Any&amp;, const testStruct&amp;)</code>
+</li><li class="li-enumerate"><code>void operator&lt;&lt;=(CORBA::Any&amp;, testStruct*)</code>
+</li><li class="li-enumerate"><code>CORBA::Boolean operator&gt;&gt;=(const CORBA::Any&amp;,</code><br>
+ <code>const testStruct*&amp;)</code>
+</li></ol><p>Operators of this form are generated for all constructed types, and
+for interfaces.</p><p>The first operator, <em>(1)</em>, copies the constructed type, and
+inserts it into the Any. The second operator, <em>(2)</em>, inserts the
+constructed type into the Any, and then manages it. Note that if the
+second operator is used, the Any consumes the constructed type, and
+the caller should not use the pointer to access the data after
+insertion. The following is an example of how to insert a value into
+an Any using operator <em>(1)</em>:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// C++</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">Any</span><span style="font-size:small"> </span><span style="font-size:small">an_any</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">testStruct</span><span style="font-size:small"> </span><span style="font-size:small">t</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">t</span><span style="font-size:small">.</span><span style="font-size:small">l</span><span style="font-size:small"> = 456;</span><span style="font-size:small">
+</span><span style="font-size:small">t</span><span style="font-size:small">.</span><span style="font-size:small">s</span><span style="font-size:small"> = 8;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">an_any</span><span style="font-size:small"> &lt;&lt;= </span><span style="font-size:small">t</span><span style="font-size:small">;</span></div><p>The third operator, <em>(3)</em>, is used to extract the constructed
+type from the Any, and can be used as follows:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">const</span></span><span style="font-size:small"> </span><span style="font-size:small">testStruct</span><span style="font-size:small">* </span><span style="font-size:small">tp</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">if</span></span><span style="font-size:small"> (</span><span style="font-size:small">an_any</span><span style="font-size:small"> &gt;&gt;= </span><span style="font-size:small">tp</span><span style="font-size:small">) {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"testStruct: l: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">tp</span><span style="font-size:small">-&gt;</span><span style="font-size:small">l</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"            s: "</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">tp</span><span style="font-size:small">-&gt;</span><span style="font-size:small">s</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">}</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">else</span></span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">cout</span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small"><span style="font-size:small">"Unknown value contained in Any."</span></span><span style="font-size:small"> &lt;&lt; </span><span style="font-size:small">endl</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">}</span></div><p>As with basic types, if an attempt is made to extract a type from an
+Any that does not contain a value of that type, the extraction
+operator returns <span style="font-family:monospace">false</span>. If the Any does contain that type, the
+extraction operator returns <span style="font-family:monospace">true</span>. If the extraction is
+successful, the caller&#X2019;s pointer will point to memory managed by the
+Any. The caller must not delete or otherwise change this storage, and
+should not use this storage after the contents of the Any are replaced
+(either by insertion or assignment), or after the Any has been
+destroyed. In particular, management of the pointer should not be
+assigned to a <span style="font-family:monospace">_var</span> type.</p><p>If the extraction fails, the caller&#X2019;s pointer will be set to point to
+null.</p><p>Note that there are special rules for inserting and extracting arrays
+(using the <span style="font-family:monospace">_forany</span> types), and for inserting and extracting
+bounded strings, booleans, chars, and octets. Please refer to the C++
+Mapping specification for further information.</p>
+<h2 id="sec148" class="section">10.2&#XA0;&#XA0;Type Any in omniORB</h2>
+<p>
+<a id="anyOmniORB"></a></p><p>This section contains some notes on the use and behaviour of type Any
+in omniORB.</p>
+<h3 id="sec149" class="subsection">10.2.1&#XA0;&#XA0;Generating Insertion and Extraction Operators.</h3>
+<p>
+To generate type Any insertion and extraction operators for
+constructed types and interfaces, the <span style="font-family:monospace">-Wba</span> command line flag
+should be specified when running omniidl.</p>
+<h3 id="sec150" class="subsection">10.2.2&#XA0;&#XA0;TypeCode comparison when extracting from an Any.</h3>
+<p>
+When an attempt is made to extract a type from an Any, the TypeCode of
+the type is checked for <em>equivalence</em> with the TypeCode of the
+type stored by the Any. The <span style="font-family:monospace">equivalent()</span> test in the TypeCode
+interface is used for this purpose. For example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 1</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small"> </span><span style="font-size:small">Double1</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">Test1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">Double1</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 2</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small"> </span><span style="font-size:small">Double2</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">Test1</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">Double2</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>If an attempt is made to extract the type <span style="font-family:monospace">Test1</span> defined in IDL
+1 from an Any containing the <span style="font-family:monospace">Test1</span> defined in IDL 2, this will
+succeed (and vice-versa), as the two types differ only by an alias.</p>
+<h3 id="sec151" class="subsection">10.2.3&#XA0;&#XA0;Top-level aliases.</h3>
+<p>
+When a type is inserted into an Any, the Any stores both the value of
+the type and the TypeCode for that type. However, in some cases, a
+top-level alias can be lost due to the details of the C++ mapping. For
+example, consider these IDL definitions:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 3</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">sequence</span></span><span style="font-size:small">&lt;</span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small">&gt; </span><span style="font-size:small">seqDouble1</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">sequence</span></span><span style="font-size:small">&lt;</span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small">&gt; </span><span style="font-size:small">seqDouble2</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">typedef</span></span><span style="font-size:small"> </span><span style="font-size:small">seqDouble2</span><span style="font-size:small">       </span><span style="font-size:small">seqDouble3</span><span style="font-size:small">;</span></div><p>omniidl generates distinct types for <span style="font-family:monospace">seqDouble1</span> and
+<span style="font-family:monospace">seqDouble2</span>, and therefore each has its own set of C++ operators
+for Any insertion and extraction. That means inserting a
+<span style="font-family:monospace">seqDouble1</span> into an Any sets the Any&#X2019;s TypeCode to include the
+alias &#X2018;seqDouble1&#X2019;, and inserting a <span style="font-family:monospace">seqDouble2</span> sets the
+TypeCode to the alias &#X2018;seqDouble2&#X2019;.</p><p>However, in the C++ mapping, <span style="font-family:monospace">seqDouble3</span> is required to be just
+a C++ typedef to <span style="font-family:monospace">seqDouble2</span>, so the C++ compiler uses the Any
+insertion operator for <span style="font-family:monospace">seqDouble2</span>. Therefore, inserting a
+<span style="font-family:monospace">seqDouble3</span> sets the Any&#X2019;s TypeCode to the <span style="font-family:monospace">seqDouble2</span>
+alias. If this is not desirable, you can use the member function
+&#X2018;<span style="font-family:monospace">void type(TypeCode_ptr)</span>&#X2019; of the Any interface to explicitly
+set the TypeCode to the correct one.</p>
+<h3 id="sec152" class="subsection">10.2.4&#XA0;&#XA0;Removing aliases from TypeCodes.</h3>
+<p>
+Some ORBs (such as old versions of Orbix) will not accept TypeCodes
+containing <span style="font-family:monospace">tk_alias</span> TypeCodes. When using type Any while
+interoperating with these ORBs, it is necessary to remove
+<span style="font-family:monospace">tk_alias</span> TypeCodes from throughout the TypeCode representing a
+constructed type.</p><p>To remove all <span style="font-family:monospace">tk_alias</span> TypeCodes from TypeCodes transmitted in
+Anys, supply the <span style="font-family:monospace">-ORBtcAliasExpand 1</span> command-line flag when
+running an omniORB executable. There will be some (small) performance
+penalty when transmitting Any values.</p><p>Note that the <span style="font-family:monospace">_tc_</span> TypeCodes generated for all constructed
+types will contain the complete TypeCode for the type (including any
+<span style="font-family:monospace">tk_alias</span> TypeCodes), regardless of whether the
+<span style="font-family:monospace">-ORBtcAliasExpand</span> flag is set to 1 or not. It is only when
+Anys are transmitted that the aliases are stripped.</p>
+<h3 id="sec153" class="subsection">10.2.5&#XA0;&#XA0;Recursive TypeCodes.</h3>
+<p>
+omniORB supports recursive TypeCodes. This means that types such as
+the following can be inserted or extracted from an Any:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 4</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">Test4</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">sequence</span></span><span style="font-size:small">&lt;</span><span style="font-size:small">Test4</span><span style="font-size:small">&gt; </span><span style="font-size:small">a</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div>
+<h3 id="sec154" class="subsection">10.2.6&#XA0;&#XA0;Threads and type Any.</h3>
+<p>
+Inserting and extracting simultaneously from the same Any (in 2
+threads) results in undefined behaviour.</p><p>In versions of omniORB before 4.0, extracting simultaneously from the
+same Any (in 2 or more different threads) also led to undefined
+behaviour. That is no longer the case&#X2014;Any extraction is now thread
+safe.</p>
+<h2 id="sec155" class="section">10.3&#XA0;&#XA0;TypeCode in omniORB</h2>
+<p>This section contains some notes on the use and behaviour of TypeCode
+in omniORB</p>
+<h3 id="sec156" class="subsection">10.3.1&#XA0;&#XA0;TypeCodes in IDL.</h3>
+<p>When using TypeCodes in IDL, note that they are defined in the CORBA
+scope. Therefore, <span style="font-family:monospace">CORBA::TypeCode</span> should be used. Example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 5</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">Test5</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small"> </span><span style="font-size:small">length</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small">CORBA</span><span style="font-size:small">::</span><span style="font-size:small">TypeCode</span><span style="font-size:small"> </span><span style="font-size:small">desc</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div>
+<h3 id="sec157" class="subsection">10.3.2&#XA0;&#XA0;orb.idl</h3>
+<p>The CORBA specification says that IDL using <span style="font-family:monospace">CORBA::TypeCode</span>
+must include the file <span style="font-family:monospace">orb.idl</span>. That is not required in omniORB,
+but a suitable <span style="font-family:monospace">orb.idl</span> is available.</p>
+<h3 id="sec158" class="subsection">10.3.3&#XA0;&#XA0;Generating TypeCodes for constructed types.</h3>
+<p>To generate a TypeCode for constructed types, specify the
+<span style="font-family:monospace">-Wba</span> command-line flag when running omniidl. This will
+generate a <span style="font-family:monospace">_tc_</span> TypeCode describing the type, at the same
+scope as the type. Example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// IDL 6</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">struct</span></span><span style="font-size:small"> </span><span style="font-size:small">Test6</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">sequence</span></span><span style="font-size:small">&lt;</span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small">&gt; </span><span style="font-size:small">b</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>A TypeCode, <span style="font-family:monospace">_tc_Test6</span>, will be generated to describe the
+struct <span style="font-family:monospace">Test6</span>. The operations defined in the TypeCode interface
+can be used to query the TypeCode about the type it represents.</p><hr>
+<a href="omniORB009.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB011.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORBpy.css">
+<title>The IDL compiler</title>
+</head>
+<body >
+<a href="omniORBpy004.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy006.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec60" class="chapter">Chapter&#XA0;5&#XA0;&#XA0;The IDL compiler</h1>
+<p>
+<a id="chap:omniidl"></a></p><p>omniORBpy&#X2019;s IDL compiler is called omniidl. It consists of a generic
+front-end parser written in C++, and a number of back-ends written in
+Python. omniidl is very strict about IDL validity, so you may find
+that it reports errors in IDL which compiles fine with other IDL
+compilers.</p><p>The general form of an omniidl command line is:</p><blockquote class="quote"> <span style="font-family:monospace">omniidl </span>[<span style="font-style:italic">options</span>]<span style="font-family:monospace"> -b</span>&lt;<span style="font-style:italic">back-end</span>&gt;<span style="font-family:monospace"> </span>[<span style="font-style:italic">back-end options</span>]<span style="font-family:monospace"> </span>&lt;<span style="font-style:italic">file 1</span>&gt;<span style="font-family:monospace"> </span>&#X2026;</blockquote>
+<h2 id="sec61" class="section">5.1&#XA0;&#XA0;Common options</h2>
+<p>The following options are common to all back-ends:</p><table style="border:0;border-spacing:0" class="cellpadding0"><tr><td style="text-align:left;white-space:nowrap" ></td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-b</span><span style="font-style:italic">back-end</span>
+</td><td style="text-align:left;white-space:nowrap" >Run the specified back-end. For omniORBpy, use <span style="font-family:monospace">-bpython</span>.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-D</span><span style="font-style:italic">name</span>[<span style="font-family:monospace">=</span><span style="font-style:italic">value</span>]
+</td><td style="text-align:left;white-space:nowrap" >Define <span style="font-style:italic">name</span> for the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-U</span><span style="font-style:italic">name</span>
+</td><td style="text-align:left;white-space:nowrap" >Undefine <span style="font-style:italic">name</span> for the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-I</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Include <span style="font-style:italic">dir</span> in the preprocessor search path.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-E</span>
+</td><td style="text-align:left;white-space:nowrap" >Only run the preprocessor, sending its output to stdout.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Y</span><span style="font-style:italic">cmd</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">cmd</span> as the preprocessor, rather than the normal C
+preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-N</span>
+</td><td style="text-align:left;white-space:nowrap" >Do not run the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-T</span>
+</td><td style="text-align:left;white-space:nowrap" >Use a temporary file, not a pipe, for preprocessor output.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wp</span><span style="font-style:italic">arg</span>[,<span style="font-style:italic">arg</span>&#X2026;]
+</td><td style="text-align:left;white-space:nowrap" >Send arguments to the preprocessor.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wb</span><span style="font-style:italic">arg</span>[,<span style="font-style:italic">arg</span>&#X2026;]
+</td><td style="text-align:left;white-space:nowrap" >Send arguments to the back-end.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-nf</span>
+</td><td style="text-align:left;white-space:nowrap" >Do not warn about unresolved forward declarations.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-k</span>
+</td><td style="text-align:left;white-space:nowrap" >Keep comments after declarations, to be used by some back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-K</span>
+</td><td style="text-align:left;white-space:nowrap" >Keep comments before declarations, to be used by some back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-C</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Change directory to <span style="font-style:italic">dir</span> before writing output files.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-d</span>
+</td><td style="text-align:left;white-space:nowrap" >Dump the parsed IDL then exit, without running a back-end.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-p</span><span style="font-style:italic">dir</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">dir</span> as a path to find omniidl back-ends.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-V</span>
+</td><td style="text-align:left;white-space:nowrap" >Print version information then exit.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-u</span>
+</td><td style="text-align:left;white-space:nowrap" >Print usage information.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-v</span>
+</td><td style="text-align:left;white-space:nowrap" >Verbose: trace compilation stages.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+</td></tr>
+</table><p>Most of these options are self explanatory, but some are not
+so obvious.</p>
+<h3 id="sec62" class="subsection">5.1.1&#XA0;&#XA0;Preprocessor interactions</h3>
+<p>IDL is processed by the C preprocessor before omniidl parses it.
+omniidl always uses the GNU C preprocessor (which it builds with the
+name omnicpp). The <span style="font-family:monospace">-D</span>, <span style="font-family:monospace">-U</span>, and <span style="font-family:monospace">-I</span>
+options are just sent to the preprocessor. Note that the current
+directory is not on the include search path by default&#X2014;use
+&#X2018;<span style="font-family:monospace">-I.</span>&#X2019; for that. The <span style="font-family:monospace">-Y</span> option can be used to
+specify a different preprocessor to omnicpp. Beware that line
+directives inserted by other preprocessors are likely to confuse
+omniidl.</p>
+<h4 id="sec63" class="subsubsection">5.1.1.1&#XA0;&#XA0;Windows 9x</h4>
+<p>The output from the C preprocessor is normally fed to the omniidl
+parser through a pipe. On some Windows 98 machines (but not all!) the
+pipe does not work, and the preprocessor output is echoed to the
+screen. When this happens, the omniidl parser sees an empty file, and
+produces useless stub files with strange long names. To avoid the
+problem, use the &#X2018;<span style="font-family:monospace">-T</span>&#X2019; option to create a temporary file
+between the two stages.</p>
+<h3 id="sec64" class="subsection">5.1.2&#XA0;&#XA0;Forward-declared interfaces</h3>
+<p>If you have an IDL file like:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">J</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">attribute</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> </span><span style="font-size:small">the_I</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>then omniidl will normally issue a warning:</p><pre class="verbatim"><span style="font-size:small">  test.idl:1: Warning: Forward declared interface `I' was never
+  fully defined
+</span></pre><p>It is illegal to declare such IDL in isolation, but it
+<em>is</em> valid to define interface <span style="font-family:monospace">I</span> in a separate file. If
+you have a lot of IDL with this sort of construct, you will drown
+under the warning messages. Use the <span style="font-family:monospace">-nf</span> option to suppress
+them.</p>
+<h3 id="sec65" class="subsection">5.1.3&#XA0;&#XA0;Comments</h3>
+<p>By default, omniidl discards comments in the input IDL. However, with
+the <span style="font-family:monospace">-k</span> and <span style="font-family:monospace">-K</span> options, it preserves the comments
+for use by the back-ends. The Python back-end ignores this
+information, but it is relatively easy to write new back-ends which
+<em>do</em> make use of comments.</p><p>The two different options relate to how comments are attached to
+declarations within the IDL. Given IDL like:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">I</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// A comment</span></span></span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op2</span><span style="font-size:small">();</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>the <span style="font-family:monospace">-k</span> flag will attach the comment to <span style="font-family:monospace">op1()</span>;
+the <span style="font-family:monospace">-K</span> flag will attach it to <span style="font-family:monospace">op2()</span>.</p>
+<h2 id="sec66" class="section">5.2&#XA0;&#XA0;Python back-end options</h2>
+<p>
+<a id="sec:Wbglobal"></a></p><p>When you specify the Python back-end (with <span style="font-family:monospace">-bpython</span>), the
+following <span style="font-family:monospace">-Wb</span> options become available. Note that the
+<span style="font-family:monospace">-Wb</span> options must be specified <em>after</em> the
+<span style="font-family:monospace">-bpython</span> option, so omniidl knows which back-end to give the
+arguments to.</p><table style="border:0;border-spacing:0" class="cellpadding0"><tr><td style="text-align:left;white-space:nowrap" ></td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbinline</span>
+</td><td style="text-align:left;white-space:nowrap" >Output stubs for #included files in line with the main
+file.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbstdout</span>
+</td><td style="text-align:left;white-space:nowrap" >Send the generated stubs to standard output, rather than to a
+file.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbglobal=</span><span style="font-style:italic">g</span>
+</td><td style="text-align:left;white-space:nowrap" >Use <span style="font-style:italic">g</span> as the name for the global IDL scope (default
+<span style="font-family:monospace">_GlobalIDL</span>).</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbpackage=</span><span style="font-style:italic">p</span>
+</td><td style="text-align:left;white-space:nowrap" >Put both Python modules and stub files in package
+<span style="font-style:italic">p</span>.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbmodules=</span><span style="font-style:italic">p</span>
+</td><td style="text-align:left;white-space:nowrap" >Put Python modules in package <span style="font-style:italic">p</span>.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbstubs=</span><span style="font-style:italic">p</span>
+</td><td style="text-align:left;white-space:nowrap" >Put stub files in package <span style="font-style:italic">p</span>.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+<span style="font-family:monospace">-Wbami</span>
+</td><td style="text-align:left;white-space:nowrap" >Generate AMI types and operations.</td></tr>
+<tr><td style="text-align:left;white-space:nowrap" >
+</td></tr>
+</table>
+<h3 id="sec67" class="subsection">5.2.1&#XA0;&#XA0;Inclusion options</h3>
+<p>When you compile an IDL file which #includes other IDL files, omniidl
+normally only generates code for the main file, assuming that code for
+the included files will be generated separately. Instead, you can use
+the <span style="font-family:monospace">-Wbinline</span> option to generate code for the main IDL file
+<em>and</em> all included files in a single stub file.</p>
+<h3 id="sec68" class="subsection">5.2.2&#XA0;&#XA0;Output options</h3>
+<p>The <span style="font-family:monospace">-Wbstdout</span> option is not really useful if you are
+invoking omniidl yourself. It is used by <span style="font-family:monospace">omniORB.importIDL()</span>,
+described in section&#XA0;<a href="omniORBpy004.html#sec%3AimportIDL">4.9</a>.</p><p>Definitions declared at IDL global scope are normally placed in a
+Python module named &#X2018;<span style="font-family:monospace">_GlobalIDL</span>&#X2019;. The <span style="font-family:monospace">-Wbglobal</span>
+allows you to change that.</p><p>As explained in section&#XA0;<a href="omniORBpy002.html#sec%3AgeneratingStubs">2.2</a>, when you compile an
+IDL file like:</p><div class="lstlisting"><span style="font-size:small"><span style="font-style:italic"><span style="font-size:small">// example_echo.idl</span></span></span><span style="font-size:small">
+</span><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">Example</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Echo</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">echoString</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">mesg</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>omniidl generates directories named <span style="font-family:monospace">Example</span> and
+<span style="font-family:monospace">Example__POA</span>, which provide the standard Python mapping
+modules, and also the file <span style="font-family:monospace">example_echo_idl.py</span> which contains
+the actual definitions. The latter file contains code which inserts
+the definitions in the standard modules. This arrangement means that
+it is not possible to move all of the generated code into a Python
+package by simply placing the files in a suitably named directory.
+You may wish to do this to avoid clashes with names in use elsewhere
+in your software.</p><p>You can place all generated code in a package using the
+<span style="font-family:monospace">-Wbpackage</span> command line option. For example,</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bpython -Wbpackage=generated echo_example.idl</span>
+</blockquote><p>creates a directory named &#X2018;<span style="font-family:monospace">generated</span>&#X2019;, containing the
+generated code. The stub module is now called
+&#X2018;<span style="font-family:monospace">generated.Example</span>&#X2019;, and the actual stub definitions are in
+&#X2018;<span style="font-family:monospace">generated.example_echo_idl</span>&#X2019;. If you wish to split the
+modules and the stub definitions into different Python packages, you
+can use the <span style="font-family:monospace">-Wbmodules</span> and <span style="font-family:monospace">-Wbstubs</span> options.</p><p>Note that if you use these options to change the module package, the
+interface to the generated code is not strictly-speaking CORBA
+compliant. You may have to change your code if you ever use a Python
+ORB other than omniORBpy.</p>
+<h3 id="sec69" class="subsection">5.2.3&#XA0;&#XA0;Asynchronous Method Invocation</h3>
+<p>Generate asynchronous invocation operations and the various types
+required by AMI by specifying <span style="font-family:monospace">-Wbami</span>. See
+chapter&#XA0;<a href="omniORBpy011.html#chap%3Aami">11</a> for details.</p>
+<h2 id="sec70" class="section">5.3&#XA0;&#XA0;Examples</h2>
+<p>Generate the Python stubs for a file <span style="font-family:monospace">a.idl</span>:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bpython a.idl</span>
+</blockquote><p>As above, but put the stubs in a package called
+&#X2018;<span style="font-family:monospace">stubs</span>&#X2019;:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bpython -Wbstubs=stubs a.idl</span>
+</blockquote><p>Generate both Python and C++ stubs for two IDL files:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl -bpython -bcxx a.idl b.idl</span>
+</blockquote><p>Just check the IDL files for validity, generating no output:</p><blockquote class="quote">
+<span style="font-family:monospace">omniidl a.idl b.idl</span>
+</blockquote>
+<hr>
+<a href="omniORBpy004.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy006.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

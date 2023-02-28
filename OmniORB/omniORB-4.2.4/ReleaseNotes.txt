@@ -1,0 +1,98 @@
+RELEASE NOTES
+=============
+
+This is omniORB 4.2.4
+
+See README.unix.txt or README.win32.txt for building instructions.
+See the documentation in the doc directory for more information.
+
+
+Changes since omniORB 4.2.3
+---------------------------
+
+omniORB 4.2.4 is primarily a bug fix release. See update.log for full
+details of changes. Highlights include:
+
+ - Support for C++17 compilers that do not permit throw specifications.
+
+ - Minor bug fixes.
+
+
+Changes since omniORB 4.2.2
+---------------------------
+
+omniORB 4.2.3 is primarily a bug fix release. See update.log for full
+details of changes. Highlights include:
+
+ - New retainAddressOrder and resolveNamesForTransportRules options.
+
+ - Experimental support for Mac / iOS CFNetwork connections.
+
+ - Fixed a lock order violation that could lead to a deadlock if
+   multiple connections were being opened and closed simultaneously in
+   thread pool mode.
+
+
+Changes since omniORB 4.2.1
+---------------------------
+
+omniORB 4.2.2 is primarily a bug fix release. See update.log for full
+details of changes. Highlights include:
+
+ - Support for cross-compilation using the configure script.
+
+ - New defaultCharCodeSet and defaultWCharCodeSet configuration
+   parameters to handle code set conversion with corbaloc URIs and
+   badly-behaved servers.
+
+ - Suppression of many compiler warnings.
+
+
+Changes since omniORB 4.2.0
+---------------------------
+
+omniORB 4.2.1 is primarily a bug fix release. See update.log for full
+details of changes. Highlights include:
+
+ - Improved Python 3 support.
+
+ - Additional SSL / TLS options.
+
+ - The default DH parameters for TLS are now 2048 bits.
+
+ - More efficient marshalling of messages including large numbers of
+   valuetypes.
+
+
+Changes since omniORB 4.1.x
+---------------------------
+
+omniORB 4.2 has a number of new features compared to omniORB 4.1.x,
+both large and small. Here are the highlights:
+
+ - Full Asynchronous Method Invocation (AMI) support.
+
+ - Support for ZIOP, which compresses large messages.
+
+ - Call timeouts are indicated with the CORBA::TIMEOUT exception,
+   rather than CORBA::TRANSIENT (unless suppressed with the
+   throwTransientOnTimeout configuration parameter).
+
+ - Servers can be limited to a range of ports to listen on.
+
+ - Performance improvements to Any, sequence buffer management,
+   unions, and other areas.
+
+ - Ancient Python versions are no longer supported. omniidl and
+   omniORBpy now only work with Python 2.5 or later.
+
+ - omniidl works with Python 3.x as well as 2.x.
+
+
+Known issues / limitations
+--------------------------
+
+This release has the following known issues and omissions:
+
+ - valuetypes supporting local interfaces generate invalid C++. This
+   is an issue with the standard C++ mapping.

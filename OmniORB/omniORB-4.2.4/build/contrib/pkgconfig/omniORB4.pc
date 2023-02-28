@@ -1,0 +1,15 @@
+prefix=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+datadir=${prefix}/share
+idldir=${datadir}/idl/omniORB
+omniidl=${exec_prefix}/bin/omniidl
+
+Name: omniORB4
+Description: CORBA Object Request Broker.
+Version: 4.2.4
+Requires: omnithread3
+Libs: -L${libdir} -lomniORB4
+Cflags: -I${includedir}
+unloadable_stubs=-DOMNI_UNLOADABLE_STUBS

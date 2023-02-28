@@ -1,0 +1,156 @@
+#include <orb.idl>
+module AAS_CORBA
+{
+	exception EYesNoQuestion
+	{
+		long   questionType;
+		string questionPromptWithDefaultAnswer;
+		string defaultAnswer;
+		string questionHelp;
+		string questionMessage;
+	};
+	exception EReadUnquotedString
+	{
+		long   questionType;
+		string questionPrompt;
+		string defaultAnswer;
+		string questionHelp;
+		string questionMessage;
+	};
+	exception EReadQGenericQuestion
+	{
+		long   questionType;
+		string questionPromptWithDefaultAnswer;
+		string rawDefaultAnswer;
+		string questionHelp;
+		string questionMessage;
+	};
+	exception EMenuGetQuestion
+	{
+		long   questionType;
+		string questionPrompt;
+		string questionHelp;
+		string questionMenu;
+	};
+	exception EFluentGenericError
+	{
+		long	errorType;
+		string  command;
+		string	errorInfo;
+		string  commandOutput;
+	};
+	typedef sequence<double>	CoDoubles;
+	typedef sequence<long>		CoLongs;
+	typedef sequence<string>	CoStrings;
+
+	struct CoSparseMatrixLayoutHeader
+	{
+		long		m_iNrRowBlocks;
+		long		m_iNrOffDiagonalElements;
+		long		m_iNrEquations;
+	};
+	struct CoSparseLinearSystemStorage
+	{
+		CoSparseMatrixLayoutHeader  m_sparseMatrixLayoutHeader;
+		CoLongs						m_aiLayoutBuffer;
+		CoDoubles					m_alfCoefficientBuffer;
+	};
+
+	struct CoFullMatrixStorage
+	{
+		long m_iNrRows;
+		long m_iNrCols;
+		CoDoubles m_alfCoefficients;
+	};
+
+	// Forward declaration of interfaces
+	interface ICoLogger;
+
+	// Interface sequence
+	typedef sequence<ICoLogger> IArrayCoLoggers;
+
+	interface ICoLogger
+	{
+		void logMessage(in long p_lVerbosity, in string p_szMessage) ;
+		void popupMessage(in string p_szMessage) ;
+	};
+
+	// sequence definitions
+	typedef sequence<octet>		CoOctetBuffer;
+
+	// Forward declaration of interfaces
+	interface ICoFluentUnit;
+	// Interface sequence
+	typedef sequence<ICoFluentUnit> IArrayCoFluentUnits;
+
+	// Forward declaration of interfaces
+	interface ICoFluentSchemeController;
+	// Interface sequence
+	typedef sequence<ICoFluentSchemeController> IArrayICoFluentSchemeControllers;
+
+	interface ICoFluentSchemeController
+	{
+		void execScheme(in string p_szSchemeCommand)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string execSchemeToString(in string p_szSchemeCommand)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		
+		void doMenuCommand(in string p_szMenuCommand)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string doMenuCommandToString(in string p_szMenuCommand)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		
+		void setRpVar(in string p_szRpVar, in string p_szRpVarValue)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string getRpVar(in string p_szRpVar)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		void uploadFileFromBuffer(in string p_szFileName, in CoOctetBuffer p_pFileContent)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		CoOctetBuffer downloadFileToBuffer(in string p_szFileName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		void setMaximumVerbosity(in long p_lMaximumVerbosity)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setLoggingObject(in ICoLogger p_iCoLogger)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		boolean createFolder(in string p_stringLocalFolder)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+	};
+
+
+	interface ICoFluentUnit
+	{
+		string getComponentName()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setComponentName(in string p_szName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		string getComponentDescription()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setComponentDescription(in string p_szDescription)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		void calculate()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setNrIterations(in long p_lNrIterations)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		long getNrIterations()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void loadCase(in string p_szCaseFileName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void loadData(in string p_szDataFileName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void saveCase(in string p_szCaseFileName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void saveData(in string p_szDataFileName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		
+		long getNrInputParameters()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string getInputParameterNameByIndex(in long lInputParameterIndex)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setInputParameterValueByIndex(in long p_lInputParameterIndex,in float  p_lfInputParameterValue)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setInputParameterValueByName(in string p_lInputParameterIndex,in float  p_lfInputParameterValue)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		long getNrOutputParameters()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string getOutputParameterNameByIndex(in long lOutputParameterIndex)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		float getOutputParameterValueByIndex(in long p_lOutputParameterIndex)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		float getOutputParameterValueByName(in string p_lInputParameterIndex)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		long getNrReports()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string getReportNameByIndex(in long lOutputParameterIndex)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		string getReportDescription(in string p_szReportName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		CoOctetBuffer getReportBuffer(in string p_szReportName, in string p_szReportFormat)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		void terminate()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		Object getSchemeControllerInstance()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		Object getCapeUnitControllerInstance()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		void setMaximumVerbosity(in long p_lMaximumVerbosity)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		void setLoggingObject(in ICoLogger p_iCoLogger)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+		CoSparseLinearSystemStorage getSparseLinearSystem(in string p_stringSparseLinearSystemName)raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+		CoStrings getSparseLinearSystemNames()raises (EYesNoQuestion,EReadUnquotedString,EReadQGenericQuestion,EMenuGetQuestion,EFluentGenericError);
+
+	};
+
+}; // END AAS_CORBA module ---------------------------------------

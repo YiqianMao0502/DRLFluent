@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORB.css">
+<title>Code set conversion</title>
+</head>
+<body >
+<a href="omniORB007.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB009.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec134" class="chapter">Chapter&#XA0;8&#XA0;&#XA0;Code set conversion</h1>
+<p>
+<a id="chap:codesets"></a></p><p>omniORB supports full code set negotiation, used to select and
+translate between different character code sets when transmitting
+chars, strings, wchars and wstrings. The support is mostly transparent
+to application code, but there are a number of options that can be
+selected. This chapter covers the options, and also gives some
+pointers about how to implement your own code sets, in case the ones
+that come with omniORB are not sufficient.</p>
+<h2 id="sec135" class="section">8.1&#XA0;&#XA0;Native code sets</h2>
+<p>For the ORB to know how to handle strings and wstrings given to it by
+the application, it must know what code set they are represented
+with, so it can properly translate them if need be. The defaults are
+ISO 8859-1 (Latin 1) for char and string, and UTF-16 for wchar and
+wstring. Different code sets can be chosen at initialisation time with
+the <span style="font-family:monospace">nativeCharCodeSet</span> and <span style="font-family:monospace">nativeWCharCodeSet</span>
+parameters. The supported code sets are printed out at initialisation
+time if the ORB traceLevel is 15 or greater.</p><p>For most applications, the defaults are fine. Some applications may
+need to set the native char code set to UTF-8, allowing the full
+Unicode range to be supported in strings.</p><p>Note that the default for wchar is always UTF-16, even on Unix
+platforms where wchar is a 32-bit type. Select the UCS-4 code set to
+select characters outside the first plane without having to use UTF-16
+surrogates<sup><a id="text14" href="#note14">1</a></sup>.</p>
+<h2 id="sec136" class="section">8.2&#XA0;&#XA0;Default code sets</h2>
+<p>The way code set conversion is meant to work in CORBA communication is
+that each client and server has a <span style="font-style:italic">native</span> code set that it uses
+for character data in application code, and supports a number of
+<span style="font-style:italic">transmission</span> code sets that is uses for communication. When a
+client connects to a server, the client picks one of the server&#X2019;s
+transmission code sets to use for the interaction. For that to work,
+the client plainly has to know the server&#X2019;s supported transmission
+code sets.</p><p>Code set information from servers is embedded in IORs. A client with
+an IOR from a server should therefore know what transmission code sets
+the server supports. This approach can fail for two reasons:</p><ol class="enumerate" type=1><li class="li-enumerate">
+A <span style="font-family:monospace">corbaloc</span> URI (see chapter&#XA0;<a href="omniORB007.html#chap%3Ains">7</a>) does
+not contain any code set information.</li><li class="li-enumerate">Some badly-behaved servers that do support code set conversion
+fail to put codeset information in their IORs.
+</li></ol><p>The CORBA standard says that if a server has not specified
+transmission code set information, clients must assume that they only
+support ISO-8859-1 for char and string, and do not support wchar and
+wstring at all. The effect is that client code receives
+<span style="font-family:monospace">DATA_CONVERSION</span> or <span style="font-family:monospace">BAD_PARAM</span> exceptions.</p><p>To avoid this issue, omniORB allows you to configure <span style="font-style:italic">default</span>
+code sets that are used as a server&#X2019;s transmission code sets if they
+are not otherwise known. Set <span style="font-family:monospace">defaultCharCodeSet</span> for char and
+string data, and <span style="font-family:monospace">defaultWCharCodeSet</span> for wchar and wstring data.</p>
+<h2 id="sec137" class="section">8.3&#XA0;&#XA0;Code set library</h2>
+<p>To save space in the main ORB core library, most of the code set
+implementations are in a separate library named omniCodeSets4. To use
+the extra code sets, you must link your application with that
+library. On most platforms, if you are using dynamic linking,
+specifying the omniCodeSets4 library in the link command is sufficient
+to have it initialised, and for the code sets to be available. With
+static linking, or platforms with less intelligent dynamic linkers,
+you must force the linker to initialise the library. You do that by
+including the <span style="font-family:monospace">omniORB4/optionalFeatures.h</span> header. By default,
+that header enables several optional features. Look at the file
+contents to see how to turn off particular features.</p>
+<h2 id="sec138" class="section">8.4&#XA0;&#XA0;Implementing new code sets</h2>
+<p>It is quite easy to implement new code sets, if you need support for
+code sets (or marshalling formats) that do not come with the omniORB
+distribution. There are extensive comments in the headers and ORB code
+that explain how to implement a code set; this section just serves to
+point you in the right direction.</p><p>The main definitions for the code set support are in
+<span style="font-family:monospace">include/omniORB4/codeSets.h</span>. That defines a set of base classes
+use to implement code sets, plus some derived classes that use look-up
+tables to convert simple 8-bit and 16-bit code sets to Unicode.</p><p>When sending or receiving string data, there are a total of four code
+sets in action: a native char code set, a transmission char code set,
+a native wchar code set, and a transmission wchar code set. The native
+code sets are as described above; the transmission code sets are the
+ones selected to communicate with a remote machine. They are
+responsible for understanding the GIOP marshalling formats, as well as
+the code sets themselves. Each of the four code sets has an object
+associated with it which contains methods for converting data.</p><p>There are two ways in which a string/wstring can be transmitted or
+received. If the transmission code set in action knows how to deal
+directly with the native code set (the trivial case being that they
+are the same code set, but more complex cases are possible too), the
+transmission code set object can directly marshal or unmarshal the
+data into or out of the application buffer. If the transmission code
+set does not know how to handle the native code set, it converts the
+string/wstring into UTF-16, and passes that to the native code set
+object (or vice-versa). All code set implementations must therefore
+know how to convert to and from UTF-16.</p><p>With this explanation, the classes in <span style="font-family:monospace">codeSets.h</span> should be easy
+to understand. The next place to look is in the various existing code
+set implementations, which are files of the form <span style="font-family:monospace">cs-*.cc</span> in the
+<span style="font-family:monospace">src/lib/omniORB/orbcore</span> and <span style="font-family:monospace">src/lib/omniORB/codesets</span>.
+Note how all the 8-bit code sets (the ISO 8859-* family) consist
+entirely of data and no code, since they are driven by look-up tables.</p>
+<hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes">
+<a id="note14" href="#text14">1</a></dt><dd class="dd-thefootnotes"><div class="footnotetext">If you have no idea what this means, don&#X2019;t
+worry&#X2014;you&#X2019;re better off not knowing unless you <em>really</em> have
+to.</div></dd></dl>
+<hr>
+<a href="omniORB007.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORB009.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>

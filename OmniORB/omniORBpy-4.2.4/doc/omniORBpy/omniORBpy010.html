@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="generator" content="hevea 2.32">
+<link rel="stylesheet" type="text/css" href="omniORBpy.css">
+<title>Objects by value</title>
+</head>
+<body >
+<a href="omniORBpy009.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy011.html"><img src="next_motif.svg" alt="Next"></a>
+<hr>
+<h1 id="sec121" class="chapter">Chapter&#XA0;10&#XA0;&#XA0;Objects by value</h1>
+<p>
+<a id="chap:valuetype"></a></p><p>omniORBpy supports objects by value, declared with the
+<span style="font-family:monospace">valuetype</span> keyword in IDL. This chapter outlines some issues to
+do with using valuetypes in omniORB. You are assumed to have read the
+relevant parts of the CORBA specification, specifically chapters 4 and
+5 of the CORBA 2.6 specification, and section 1.3.10 of the Python
+language mapping, version 1.2.</p>
+<h2 id="sec122" class="section">10.1&#XA0;&#XA0;Features</h2>
+<p>omniORB supports the complete objects by value specification, with the
+exception of custom valuetypes. All other features including value
+boxes, value sharing semantics, abstract valuetypes, and abstract
+interfaces are supported.</p>
+<h2 id="sec123" class="section">10.2&#XA0;&#XA0;Value sharing and local calls</h2>
+<p>When valuetypes are passed as parameters in CORBA calls (i.e. calls
+on CORBA objects declared with <span style="font-family:monospace">interface</span> in IDL), the structure
+of related values is maintained. Consider, for example, the following
+IDL definitions (which are from the example code in
+<span style="font-family:monospace">src/examples/valuetype/simple</span>:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small">   </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">Test</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">b</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>If the client to the <span style="font-family:monospace">Test</span> object passes the same value in both
+parameters, just one value is transmitted, and the object
+implementation receives a copy of the single value, with references to
+it in both parameters.</p><p>In the case that the object is remote from the client, there is
+obviously a copying step involved. In the case that the object is in
+the same address space as the client, the same copying semantics must
+be maintained so that the object implementation can modify the values
+it receives without the client seeing the modifications. To support
+that, omniORB must copy the entire parameter list in one operation, in
+case there is sharing between different parameters. Such copying is a
+rather more time-consuming process than the parameter-by-parameter
+copy that takes place in calls not involving valuetypes.</p><p>To avoid the overhead of copying parameters in this way, applications
+can choose to relax the semantics of value copying in local calls, so
+values are not copied at all, but are passed by reference. In that
+case, the client to a call <em>will</em> see any modifications to the
+values it passes as parameters (and similarly, the object
+implementation will see any changes the client makes to returned
+values). To choose this option, set the <span style="font-family:monospace">copyValuesInLocalCalls</span>
+configuration parameter to zero.</p>
+<h2 id="sec124" class="section">10.3&#XA0;&#XA0;Value factories</h2>
+<p>As specified in section 1.3.10 of the Python language mapping (version
+1.2), factories are automatically registered for values with no
+operations. This means that in common usage where values are just used
+to hold state, the application code does not need to implement and
+register factories. The application may still register different
+factories if it requires.</p><p>If the IDL definitions specify operations on values, the application
+is supposed to provide implementations of the operations, meaning that
+it must register suitable factories. If the application chooses to
+ignore the operations and just manipulate the data inside the values,
+omniidl can be asked to register factories for <em>all</em> values, not
+just ones with no operations, using the <span style="font-family:monospace">-Wbfactories</span> option.</p><p>The Python language mapping says a value factory should be &#X201C;a class
+instance with a <span style="font-family:monospace">__call__</span> method taking no arguments&#X201D;.
+omniORBpy is less restrictive than that, and permits the use of
+<em>any</em> callable object, in particular the value implementation
+class itself.</p>
+<h2 id="sec125" class="section">10.4&#XA0;&#XA0;Standard value boxes</h2>
+<p>The standard <span style="font-family:monospace">CORBA.StringValue</span> and <span style="font-family:monospace">CORBA.WStringValue</span>
+value boxes are available to application code. To make the definitions
+available in IDL, #include the standard <span style="font-family:monospace">orb.idl</span>.</p>
+<h2 id="sec126" class="section">10.5&#XA0;&#XA0;Values inside Anys</h2>
+<p>Valuetypes inserted into Anys cause a number of interesting issues.
+Even when inside Anys, values are required to support complete sharing
+semantics. Take this IDL for example:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">string</span></span><span style="font-size:small"> </span><span style="font-size:small">s</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">long</span></span><span style="font-size:small">   </span><span style="font-size:small">l</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">interface</span></span><span style="font-size:small"> </span><span style="font-size:small">AnyTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">void</span></span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> </span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small"><span style="font-weight:bold">in</span></span><span style="font-size:small"> </span><span style="font-size:small">Any</span><span style="font-size:small"> </span><span style="font-size:small">a</span><span style="font-size:small">);</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Now, suppose the client behaves as follows:</p><div class="lstlisting"><span style="font-size:small">v</span><span style="font-size:small"> = </span><span style="font-size:small">One_impl</span><span style="font-size:small">(</span><span style="font-size:small"><span style="font-size:small">"hello"</span></span><span style="font-size:small">, 123)</span><span style="font-size:small">
+</span><span style="font-size:small">a</span><span style="font-size:small"> = </span><span style="font-size:small">CORBA</span><span style="font-size:small">.</span><span style="font-size:small">Any</span><span style="font-size:small">(</span><span style="font-size:small">ValueTest</span><span style="font-size:small">.</span><span style="font-size:small">_tc_One</span><span style="font-size:small">, </span><span style="font-size:small">v</span><span style="font-size:small">)</span><span style="font-size:small">
+</span><span style="font-size:small">obj</span><span style="font-size:small">.</span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small">a</span><span style="font-size:small">)</span></div><p>then on the server side:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">class</span></span><span style="font-size:small"> </span><span style="font-size:small">AnyTest_impl</span><span style="font-size:small">:</span><span style="font-size:small">
+</span><span style="font-size:small">    ...</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">def</span></span><span style="font-size:small"> </span><span style="font-size:small">op1</span><span style="font-size:small">(</span><span style="font-size:small">self</span><span style="font-size:small">, </span><span style="font-size:small">v</span><span style="font-size:small">, </span><span style="font-size:small">a</span><span style="font-size:small">):</span><span style="font-size:small">
+</span><span style="font-size:small">        </span><span style="font-size:small">v2</span><span style="font-size:small"> = </span><span style="font-size:small">a</span><span style="font-size:small">.</span><span style="font-size:small">value</span><span style="font-size:small">()</span><span style="font-size:small">
+</span><span style="font-size:small">        </span><span style="font-size:small">assert</span><span style="font-size:small"> </span><span style="font-size:small">v2</span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">is</span></span><span style="font-size:small"> </span><span style="font-size:small">v</span></div><p>This is all very well in this kind of simple situation, but problems
+can arise if truncatable valuetypes are used. Imagine this derived
+value:</p><div class="lstlisting"><span style="font-size:small"><span style="font-weight:bold">module</span></span><span style="font-size:small"> </span><span style="font-size:small">ValueTest</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">  </span><span style="font-size:small"><span style="font-weight:bold">valuetype</span></span><span style="font-size:small"> </span><span style="font-size:small">Two</span><span style="font-size:small"> : </span><span style="font-size:small"><span style="font-weight:bold">truncatable</span></span><span style="font-size:small"> </span><span style="font-size:small">One</span><span style="font-size:small"> {</span><span style="font-size:small">
+</span><span style="font-size:small">    </span><span style="font-size:small"><span style="font-weight:bold">public</span></span><span style="font-size:small"> </span><span style="font-size:small"><span style="font-weight:bold">double</span></span><span style="font-size:small"> </span><span style="font-size:small">d</span><span style="font-size:small">;</span><span style="font-size:small">
+</span><span style="font-size:small">  };</span><span style="font-size:small">
+</span><span style="font-size:small">};</span></div><p>Now, suppose that the client shown above sends an instance of
+valuetype <span style="font-family:monospace">Two</span> in both parameters, and suppose that the server
+has not seen the definition of valuetype <span style="font-family:monospace">Two</span>. In this
+situation, as the first parameter is unmarshalled, it will be
+truncated to valuetype <span style="font-family:monospace">One</span>, as required. Now, when the Any is
+unmarshalled, it refers to the same value, which has been truncated.
+So, even though the TypeCode in the Any indicates that the value has
+type <span style="font-family:monospace">Two</span>, the stored value actually has type <span style="font-family:monospace">One</span>. If the
+receiver of the Any tries to pass it on, transmission will fail
+because the Any&#X2019;s value does not match its TypeCode.</p><p>In the opposite situation, where an Any parameter comes before a
+valuetype parameter, a different problem occurs. In that case, as the
+Any is unmarshalled, there is no type information available for
+valuetype <span style="font-family:monospace">Two</span>, so omniORBpy constructs a suitable type based on
+the transmitted TypeCode. Because omniORBpy is unable to know how (and
+indeed if) the application has implemented valuetype <span style="font-family:monospace">One</span>, the
+generated class for valuetype <span style="font-family:monospace">Two</span> is not derived from the
+application&#X2019;s <span style="font-family:monospace">One</span> class. When the second parameter is
+unmarshalled, it is given as an indirection to the
+previously-marshalled value inside the Any. The parameter is therefore
+set to the constructed <span style="font-family:monospace">Two</span> type, rather than being truncated to
+an instance of the application&#X2019;s registered <span style="font-family:monospace">One</span> type.</p><p>Because of these issues, it is best to avoid defining interfaces that
+mix valuetypes and Anys in a single operation, and certainly to avoid
+trying to share plain values with values inside Anys.</p>
+<hr>
+<a href="omniORBpy009.html"><img src="previous_motif.svg" alt="Previous"></a>
+<a href="index.html"><img src="contents_motif.svg" alt="Up"></a>
+<a href="omniORBpy011.html"><img src="next_motif.svg" alt="Next"></a>
+</body>
+</html>
