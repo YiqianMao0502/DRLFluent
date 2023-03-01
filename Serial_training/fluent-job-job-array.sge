@@ -1,0 +1,26 @@
+#!/bin/bash --login
+#$ -cwd
+#$ -t 1-32
+
+# Load the software
+module load apps/binapps/fluent/19.5
+
+# A job array task cannot be numbered zero. If we need to use a folder that is numbered 0 then
+# we need to do a little bit of maths with the task id
+
+INDEX=$((SGE_TASK_ID-1))
+
+# Move to the folder where fluent will run
+mkdir env_$INDEX
+cp -r simulation_base.zip env_$INDEX
+cd env_$INDEX
+unzip simulation_base.zip
+
+# These next two lines let us know where fluent is running
+echo "ready"
+pwd
+
+# The fluent command we want to run
+fluent 2d -g -i testc.jou -aas
+
+cd ..
