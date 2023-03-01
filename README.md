@@ -6,23 +6,23 @@ DRLFluent is a distributed co-simulation framework coupling a DRL API, <a href="
 </div>
 
 ## Dependencies
-### Reinforcement learning
-|      Package     |     Version   |    Note  | 
-|:-----------------|--------------:|:---------|
-| Python           |      3.7      |          |
-| TensorFlow       |      1.13     |          |
-| TensorForce      |      0.5.0    |          |
+### Reinforcement learning                                      ### CFD solver
+|      Package     |     Version   |                   |      Software    |     Version   |
+|:-----------------|--------------:|                   |:-----------------|--------------:|
+| Python           |      3.7      |                   | Ansys-Fluent     |     ≥19.2     |
+| TensorFlow       |      1.13     |
+| TensorForce      |      0.5.0    |
 
-### CFD solver
-|      Software    |     Version   |    Note  |
-|:-----------------|--------------:|:---------|
-| Ansys-Fluent     |     ≥19.2     |          |
+
+
+
+
 
 ### Communication
-|      Software    |     Version   |    Note  |
-|:-----------------|--------------:|:---------|
-| omniORB          |     4.2.4     |          |
-| omniORBpy        |     4.2.4     |          |
+|      Software    |     Version   |
+|:-----------------|--------------:|
+| omniORB          |     4.2.4     |
+| omniORBpy        |     4.2.4     |
 
 The versions of the components listed above are stable versions used for the development of the test case (Applying DRL to active flow control), which can also meet general development needs. If a higher version of TensorForce is needed, the prerequisite tensorflow package and Python also need to be updated to match the version. If the Python version changes, please find the corresponding version of <a href="https://sourceforge.net/projects/omniorb/files/">omniORB</a> on sourceforge.net.
 
