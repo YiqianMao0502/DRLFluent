@@ -74,7 +74,9 @@ Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real direct
 omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython *WDir1*/WorkingFolder/CoFluentUnit.idl
 ```
 
-## Examples - Active control on flow around a circular cylinder at the Reynolds number of 100 (Realized on CSF3, a HPC cluster at the University of Manchester)
+## Example - Active control on flow around a circular cylinder at the Reynolds number of 100 
+
+The example was realized on CSF3, a HPC cluster at the University of Manchester.
 
 ### Training
 
