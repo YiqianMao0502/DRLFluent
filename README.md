@@ -74,10 +74,10 @@ Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real direct
 omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython *WDir1*/WorkingFolder/CoFluentUnit.idl
 ```
 
-## Examples (realized on CSF3, a HPC cluster at the University of Manchester)
+## Examples (Realized on CSF3, a HPC cluster at the University of Manchester)
 
 Copy WorkingFolder to the working directory. 
 
-Change the number of sub jobs corresponding to the number of environments in the fluent-job-job-array.sge and submit the job array.
+Change the number of sub jobs to the number of environments in the fluent-job-job-array.sge and submit the job array.
 
-Change the number after -n in the python_job file and submit python_job.
+Change the number after -n to the number of environments in the python_job file and submit python_job.
