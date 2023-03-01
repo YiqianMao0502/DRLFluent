@@ -49,12 +49,12 @@ Copy the folder OmniORB to a long-term storage directory *Dir1*. Set environment
 The corresponding commands are listed below. Note that *Dir1* should be changed to the real directory of OmniORB.
 
 ```bash
-export PYTHONPATH=$PYTHONPATH:*Dir1*/OmniORB/omni_inst/lib/python3.7/site-packages
-export LD_LIBRARY_PATH=*Dir1*/OmniORB/omni_inst/lib
-export PATH=$PATH:*Dir1*/OmniORB/omni_inst/bin
-OMNINAMES_DATADIR=*Dir1*/OmniORB/wib/wob
+export PYTHONPATH=$PYTHONPATH:Dir1/OmniORB/omni_inst/lib/python3.7/site-packages
+export LD_LIBRARY_PATH=Dir1/OmniORB/omni_inst/lib
+export PATH=$PATH:Dir1/OmniORB/omni_inst/bin
+OMNINAMES_DATADIR=Dir1/OmniORB/wib/wob
 export OMNINAMES_DATADIR
-OMNIORB_CONFIG=*Dir1*/OmniORB/wib/wob/omniORB.cfg
+OMNIORB_CONFIG=Dir1/OmniORB/wib/wob/omniORB.cfg
 export OMNIORB_CONFIG
 ```
 
@@ -71,7 +71,7 @@ Collect CoFluentUnit.idl from the folder of Ansys-Fluent to the WorkingFolder *W
 Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real directory of WorkingFolder.
 
 ```bash
-omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython *WDir1*/WorkingFolder/CoFluentUnit.idl
+omniidl -I Dir1/OmniORB/omni_inst/share/idl/omniORB -bpython WDir1/WorkingFolder/CoFluentUnit.idl
 ```
 
 ## Example - Active control on flow around a circular cylinder at the Reynolds number of 100 
