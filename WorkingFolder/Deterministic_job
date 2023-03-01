@@ -1,14 +1,6 @@
 #!/bin/bash --login
 #$ -cwd             # Job will run from the current directory
                     # NO -V line - we load modulefiles in the jobscript
-#$ -pe smp.pe 1     # Number of cores (2-32)
-
-# Load the version you require
-module load apps/binapps/anaconda3/2019.07
-module load tools/env/proxy
-
-# Activate the environment. Note: You must use the 'source' keyword, not 'conda'.
-source activate parallel
 
 export PYTHONPATH=$PYTHONPATH:/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst/lib/python3.7/site-packages
 export LD_LIBRARY_PATH=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst/lib
