@@ -74,10 +74,15 @@ Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real direct
 omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython *WDir1*/WorkingFolder/CoFluentUnit.idl
 ```
 
-## Examples (Realized on CSF3, a HPC cluster at the University of Manchester)
+## Examples - Active control on flow around a circular cylinder at the Reynolds number of 100 (Realized on CSF3, a HPC cluster at the University of Manchester)
+
+### Training
 
 Copy WorkingFolder to the working directory. 
 
 Change the number of sub jobs to the number of environments in the fluent-job-job-array.sge and submit the job array.
 
-Change the number after -n to the number of environments in the python_job file and submit python_job.
+Change the number after -n to the number of environments in the Training_job file and submit Training_job.
+
+### Inference
+Submit Deterministic_job.
