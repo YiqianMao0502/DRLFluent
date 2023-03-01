@@ -1,0 +1,17 @@
+#!/bin/bash --login
+#$ -cwd             # Job will run from the current directory
+                    # NO -V line - we load modulefiles in the jobscript
+
+export PYTHONPATH=$PYTHONPATH:/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst/lib/python3.7/site-packages
+export LD_LIBRARY_PATH=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst/lib
+export PATH=$PATH:/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/omni_inst/bin
+OMNINAMES_DATADIR=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/wib/wob
+export OMNINAMES_DATADIR
+OMNIORB_CONFIG=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/wib/wob/omniORB.cfg
+export OMNIORB_CONFIG
+
+# Inform numpy how many cores to use. $NSLOTS is automatically set to the number given above.
+export OMP_NUM_THREADS=$NSLOTS
+
+# Now the commands to be run by the job
+python3 Deterministic_mode.py -n 1
