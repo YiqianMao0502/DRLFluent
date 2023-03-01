@@ -34,9 +34,9 @@ git clone https://github.com/YiqianMao0502/DRLFluent.git
 
 ## Installation
 
-## OmniORB
+### OmniORB
 
-OmniORB installaztion on local machines (Windows system) can be refered to <a href="https://www.youtube.com/watch?v=v4eZPioTOYs">Python-Fluent AAS coupling</a> 
+OmniORB installaztion on local machines (Windows system) can be refered to <a href="https://www.youtube.com/watch?v=v4eZPioTOYs">Python-Fluent AAS coupling</a>. 
 
 The omniORB v4.2.4 is included in the DRLFluent package. For other versions please download on <a href="https://sourceforge.net/projects/omniorb/files/">sourceforge.net</a>.
 
@@ -64,16 +64,20 @@ Start omniNames
 omniNames -start &
 ```
 
-## Compile Corba interfaces (if using another version of OmniORB)
+### Compile Corba interfaces (If using another version of OmniORB)
 
-Collect CoFluentUnit.idl from the folder of Ansys-Fluent. 
+Collect CoFluentUnit.idl from the folder of Ansys-Fluent to the WorkingFolder *WDir1*. 
 
-On HPC (Linux system)
+Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real directory of WorkingFolder.
 
 ```bash
-omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython /mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/Workingfolder/CoFluentUnit.idl
+omniidl -I *Dir1*/OmniORB/omni_inst/share/idl/omniORB -bpython *WDir1*/WorkingFolder/CoFluentUnit.idl
 ```
 
-## Examples
+## Examples (realized on CSF3, a HPC cluster at the University of Manchester)
 
-Copy Working
+Copy WorkingFolder to the working directory. 
+
+Change the number of sub jobs corresponding to the number of environments in the fluent-job-job-array.sge and submit the job array.
+
+Change the number after -n in the python_job file and submit python_job.
