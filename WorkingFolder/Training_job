@@ -1,7 +1,7 @@
 #!/bin/bash --login
 #$ -cwd             # Job will run from the current directory
                     # NO -V line - we load modulefiles in the jobscript
-#$ -pe smp.pe 4     # Number of cores (2-32)
+#$ -pe smp.pe 32     # Number of cores (2-32)
 
 # Load the version you require
 module load apps/binapps/anaconda3/2019.07
@@ -22,4 +22,4 @@ export OMNIORB_CONFIG
 export OMP_NUM_THREADS=$NSLOTS
 
 # Now the commands to be run by the job
-python3 launch_parallel_training.py -n 4
+python3 launch_parallel_training.py -n 32
