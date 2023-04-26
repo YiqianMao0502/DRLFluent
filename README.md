@@ -24,7 +24,6 @@ DRLFluent is a distributed co-simulation framework coupling a DRL API, <a href="
 | omniORB          |     4.2.4     |
 | omniORBpy        |     4.2.4     |
 
-The versions of the components listed above are stable versions used for the development of the test case (Applying DRL to active flow control), which can also meet general development needs. If a higher version of TensorForce is needed, the prerequisite tensorflow package and Python also need to be updated to match the version. If the Python version changes, please find the corresponding version of <a href="https://sourceforge.net/projects/omniorb/files/">omniORB</a> on sourceforge.net.
 
 ## Download
 
@@ -73,6 +72,50 @@ Compile CoFluentUnit.idl. Note that *WDir1* should be changed to the real direct
 ```bash
 omniidl -I Dir1/OmniORB/omni_inst/share/idl/omniORB -bpython WDir1/WorkingFolder/CoFluentUnit.idl
 ```
+
+## Application development
+
+The agent-environment interaction through the CORBA interfaces is shown in Fig. 1. The application development consists of three parts.
+
+1. DRL. RL algorithm, network architecture, state, action, reward, etc.
+2. CFD (Beige colour). Build a validated numerical model for simulating the environment.
+3. Comminication (Coffee colour). 
+
+<div align="center">
+
+![Interaction](./Figures/Interaction.png)
+
+Fig. 1 Agent-environment interaction
+</div>
+
+The distributed architecture of DRLFluent is shown in Fig. 2, which allows clients and servers running on different devices are able to identify, locate and communicate with each other. The parallelization of learning is based on the multi-environment approach proposed by Rabault and Kuhnle, and the reader can also refer to the [open source
+code](https://github.com/jerabaul29/Cylinder2DFlowControlDRLParallel).
+
+<div align="center">
+
+![Multi-processing](./Figures/Multi-processing.png)
+
+Fig. 2 Multi-environment learning by DRLFluent
+</div>
+
+## Workflow on HPC systems
+
+As shown in Fig. 3, the workflow comprises three stages: For the first use, building the communication platform (orange lines), launching the fluent servers (blue lines), and running the DRL task (green lines).
+
+<div align="center">
+
+![HPC_workflow](./Figures/HPC_workflow.png)
+
+Fig. 3 Workflow of DRLFluent on HPC systems
+</div>
+
+The detailed workflow is given as below.
+
+<div align="center">
+
+![Workflow](./Figures/Workflow.png)
+
+</div>
 
 ## Example - Active control on flow around a circular cylinder at the Reynolds number of 100 
 
