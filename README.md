@@ -131,3 +131,6 @@ Change the number after -n to the number of environments in the Training_job fil
 
 ### Inference
 Submit Deterministic_job.
+
+## Contact and Support
+yiqian.mao@manchester.ac.uk (Yiqian Mao)
