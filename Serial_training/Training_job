@@ -11,4 +11,4 @@ OMNIORB_CONFIG=/mnt/iusers01/mace01/m83358ym/InterfaceFluentPython/wib/wob/omniO
 export OMNIORB_CONFIG
 
 # Now the commands to be run by the job
-python3 launch_parallel_training.py -n 1
+python3 Multi_envs_training.py -n 1
