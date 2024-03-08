@@ -15,4 +15,4 @@ export OMNIORB_CONFIG
 export OMP_NUM_THREADS=$NSLOTS
 
 # Now the commands to be run by the job
-python3 launch_parallel_training.py -n 32
+python3 Multi_envs_training.py -n 32
