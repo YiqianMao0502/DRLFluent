@@ -1,0 +1,1 @@
+/opt/apps/apps/binapps/fluent/19.5/ansys_inc/v195/fluent/fluent19.5.0/bin/fluent -r19.5.0 2d -g -i testc.jou -aas
